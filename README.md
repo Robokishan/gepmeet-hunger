@@ -1,6 +1,6 @@
 # gepmeet
 Online social gathering and meeting platform. 
 
-* List down thaughts
+* List down thoughts 💭
 * Name
 * Tasklist
