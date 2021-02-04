@@ -13,6 +13,39 @@
   }
 }
 
+input.error {
+  border: 1px solid red;
+}
+.errorMessage {
+  color: red;
+  font-size: 0.75em;
+  display: relative;
+}
+.circle-vid {
+  -webkit-clip-path: circle(50%);
+  clip-path: circle(50%);
+}
+.canvas {
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+  cursor: default !important;
+}
+.canvasContainer {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
+  user-select: none; /* Standard syntax */
+  touch-action: none;
+}
+.vidCont {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .App-header {
   background-color: #282c34;
   min-height: 100vh;
