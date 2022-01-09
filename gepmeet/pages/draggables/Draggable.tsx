@@ -4,18 +4,20 @@ import _ from "lodash";
 
 interface Props {
   isLocal: boolean;
-  handleDrag: any;
+  handleDrag?: any;
+  children: React.ReactElement | React.ReactNode;
 }
 
 export default function Draggable({
   isLocal,
   handleDrag,
+  children,
 }: Props): ReactElement {
   return (
     <Rnd
       onDrag={handleDrag}
       // onDragStop={() => {dispatch(dragResizeSlice.actions.setDragging(false))}}
-      disableDragging={isLocal}
+      disableDragging={!isLocal}
       enableResizing={false}
       // scale={zoom}
       // position={{x: position.x, y: position.y}}
@@ -26,7 +28,7 @@ export default function Draggable({
         borderRadius: "50%",
       }}
     >
-      <div className="content">{this.props.children}</div>
+      <div className="content">{children}</div>
     </Rnd>
   );
 }

@@ -1,42 +1,50 @@
 import { Form, Button, Container, Row, Col } from "react-bootstrap";
 import { config } from "../config/config";
-import React from "react";
+import { ReactElement, useEffect, useState } from "react";
 import { v4 } from "uuid";
 import _, { repeat } from "lodash";
 import Draggable from "../draggables/Draggable";
-import backgroundImage from "/public/background_home.jpg";
 
-class Login extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      participants: [],
-      roomname: process.env.NODE_ENV != "production" ? "oizomtest" : "",
-      room: null,
-      joined: false,
-      connected: false,
-      roomIDError: false,
-      errorMessage: "RoomId must not be empty and must be > than 4",
-    };
-    this.JitsiInit = this.JitsiInit.bind(this);
-    this.JitsiConnect = this.JitsiConnect.bind(this);
-    this.Jitsileave = this.Jitsileave.bind(this);
-    this.onMeetChange = this.onMeetChange.bind(this);
-    this.updateParticipantUi = this.updateParticipantUi.bind(this);
-    this.connection = null;
-  }
+interface Props {}
 
-  async JoinRoom(camOn, micOn, cameraID, micID) {}
+interface State {
+  participants: Array<any>;
+  roomname: any; // process.env.NODE_ENV != "production" ? "oizomtest" : "",
+  room: any;
+  joined: boolean;
+  connected: boolean;
+  roomIDError: boolean;
+  errorMessage: string;
+}
 
-  onMeetChange(e) {
-    // console.log(e.target.name,e.target.value);
-    this.setState({
-      [e.target.name]: e.target.value,
-    });
-  }
+// participants: [],
+// roomname: process.env.NODE_ENV != "production" ? "oizomtest" : "",
+// room: null,
+// joined: false,
+// connected: false,
+// roomIDError: false,
+// errorMessage: "RoomId must not be empty and must be > than 4",
 
-  Join(camOn, micOn, cameraID, micID) {
-    this.JoinRoom(camOn, micOn, cameraID, micID).then((leave_) => {
+export default function Login({}: Props): ReactElement {
+  const [participants, setParticipants] = useState<Array<any>>([]);
+  const [roomname, setroomname] = useState<string>(null);
+  const [room, setroom] = useState(null);
+  const [joined, setJoined] = useState(false);
+  const [connected, setConnected] = useState(false);
+  const [roomIDError, setRoomIDError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>(
+    "RoomId must not be empty and must be > than 4"
+  );
+  const [globalConnection, setGlobalConnection] = useState(null);
+
+  const JoinRoom = async (camOn, micOn, cameraID, micID) => {};
+
+  const onMeetChange = (e) => {
+    setroomname(e.target.value);
+  };
+
+  const Join = (camOn, micOn, cameraID, micID) => {
+    JoinRoom(camOn, micOn, cameraID, micID).then((leave_) => {
       //   leave.current = leave_
       //   closeCamSettings()
       let vidKey = v4();
@@ -116,22 +124,20 @@ class Login extends React.Component {
       //     }
       //   }
     });
-  }
-  Jitsileave(e) {
+  };
+  const Jitsileave = (e) => {
     e.preventDefault();
     // console.log("room",this.state.room);
-    if (this.state.room) {
-      // console.log("room",this.state.room);
-      this.state.room.leave();
-      this.setState({
-        joined: false,
-        connected: false,
-      });
-      this.connection.disconnect();
+    if (room) {
+      // console.log("room",room);
+      room.leave();
+      setConnected(false);
+      setJoined(false);
+      if (globalConnection) globalConnection.disconnect();
     }
-  }
+  };
 
-  updateParticipantUi(jitsiParticipants) {
+  const updateParticipantUi = (jitsiParticipants) => {
     let vidKey = v4();
     let audKey = v4();
     let vidStream = null; //mediastream
@@ -154,7 +160,7 @@ class Login extends React.Component {
             if (!isVideoOff) {
               vidKey = track.getId();
               vidStream = track.stream;
-              const el = document.getElementById(
+              const el: any = document.getElementById(
                 `${participant._properties.userID}_video`
               );
               // const el = document.getElementById(`video_stream`)
@@ -182,7 +188,7 @@ class Login extends React.Component {
             // console.log("isMute",isMute);
 
             // if(!isMute) {
-            const el = document.getElementById(
+            const el: any = document.getElementById(
               `${participant._properties.userID}_audio`
             );
             //   const el = document.getElementById(`audio_stream`)
@@ -204,45 +210,43 @@ class Login extends React.Component {
         }
       }
     }
-  }
+  };
 
-  async JitsiConnect(e) {
+  const JitsiConnect = async (e) => {
     e.preventDefault();
 
-    var _roomID = this.state.roomname;
-    if (this.state.roomname.length > 4) {
+    let _roomID = roomname;
+    if (roomname.length > 4) {
       try {
-        this.setState({
-          joined: true,
-          roomIDError: false,
-        });
-        var room = await this.JitsiInit(_roomID, (jitsiParticipants) => {
+        setJoined(true);
+        setRoomIDError(false);
+        var room = await JitsiInit(_roomID, (jitsiParticipants) => {
           // updateParticipantUi(jitsiParticipants); //removed due to some stability issues
         });
 
         // console.log("setting",room);
-        this.setState({ room: room, connected: true });
+        setroom(room);
+        setConnected(true);
       } catch (e) {
-        this.setState({ room: room, joined: false });
+        setroom(room);
+        setJoined(false);
       }
     } else {
-      this.setState({
-        roomIDError: true,
-      });
+      setRoomIDError(true);
     }
-  }
-  JitsiInit(roomID, participants) {
+  };
+  const JitsiInit = async (roomID, participants) => {
     return new Promise((resolve, reject) => {
       let room = null;
-      var localParticipant = {};
+      var localParticipant: any = {};
       function onDeviceListChanged(devices) {
         // console.info('current devices', devices);
       }
       const participantCallback = (room) => {
         let participants_ = room.getParticipants();
-        // console.log("Participants", room.getParticipants());
+        console.log("Participants", room.getParticipants());
         participants_.push(localParticipant);
-        this.setState({ participants: participants_ });
+        setParticipants(participants_);
         participants(participants_);
       };
       function onConnectionSuccess() {
@@ -319,6 +323,7 @@ class Login extends React.Component {
       }
       function disconnect() {
         console.log("disconnect!!");
+
         connection.removeEventListener(
           JitsiMeetJS.events.connection.CONNECTION_ESTABLISHED,
           onConnectionSuccess
@@ -364,86 +369,91 @@ class Login extends React.Component {
         onDeviceListChanged
       );
       connection.connect();
-      this.connection = connection;
+      // this.connection = connection;
+      setGlobalConnection(connection);
     });
-  }
+  };
 
-  render() {
-    this.updateParticipantUi(this.state.participants);
-    var participants = this.state.participants.forEach((participant, index) => {
-      console.log("participants", index, participant);
-    });
+  useEffect(() => {
+    updateParticipantUi(participants);
+  }, [participants]);
 
-    return (
-      <div>
-        <Form>
-          <Form.Group controlId="formBasicEmail">
-            <Form.Label>Id</Form.Label>
-            <Form.Control
-              style={{
-                width: "75%",
-                textAlign: "center",
-                margin: "auto",
-              }}
-              isInvalid={this.state.roomIDError}
-              name="roomname"
-              type="text"
-              placeholder="Enter id"
-              onChange={this.onMeetChange}
-            />
-            {this.state.roomIDError === false ? (
-              <Form.Text className="text-muted">
-                We'll always share your email with everyone else.
-              </Form.Text>
-            ) : (
-              <Form.Text
-                style={{
-                  color: "red",
-                  fontSize: "20px",
-                }}
-              >
-                {this.state.errorMessage}
-              </Form.Text>
-            )}
-          </Form.Group>
-          {this.state.joined === false ? (
-            <Button variant="primary" type="submit" onClick={this.JitsiConnect}>
-              Submit
-            </Button>
-          ) : (
-            <Button variant="danger" type="submit" onClick={this.Jitsileave}>
-              Leave
-            </Button>
-          )}
-          {this.state.connected ? (
-            <Form.Text style={{ fontSize: "20px", color: "green" }}>
-              Connected!
-            </Form.Text>
-          ) : null}
-        </Form>
-        <div className="canvasContainer" id="canvasContainer">
-          <div
-            className="canvas"
-            id="canvas"
+  return (
+    <div>
+      <Form>
+        <Form.Group controlId="formBasicEmail">
+          <Form.Label>Id</Form.Label>
+          <Form.Control
             style={{
-              margin: "10px",
+              width: "75%",
               textAlign: "center",
-              marginRight: "10px",
-              marginBottom: "10px",
-              border: "cyan",
-              borderStyle: "dotted",
-              backgroundRepeat: "no-repeat",
-              backgroundSize: "contain",
-              backgroundImage: `url(background_home.jpg)`,
-              width: 2160,
-              height: 2160,
-              position: "absolute",
+              margin: "auto",
             }}
-          >
-            {this.state.participants.map((participant, index) => {
-              // console.log(`${index}_video_track`, `${index}_audio_track`);
+            isInvalid={roomIDError}
+            name="roomname"
+            type="text"
+            placeholder="Enter id"
+            onChange={onMeetChange}
+          />
+          {roomIDError === false ? (
+            <Form.Text className="text-muted">
+              We'll always share your email with everyone else.
+            </Form.Text>
+          ) : (
+            <Form.Text
+              style={{
+                color: "red",
+                fontSize: "20px",
+              }}
+            >
+              {errorMessage}
+            </Form.Text>
+          )}
+        </Form.Group>
+        {joined === false ? (
+          <Button variant="primary" type="submit" onClick={JitsiConnect}>
+            Submit
+          </Button>
+        ) : (
+          <Button variant="danger" type="submit" onClick={Jitsileave}>
+            Leave
+          </Button>
+        )}
+        {connected ? (
+          <Form.Text style={{ fontSize: "20px", color: "green" }}>
+            Connected!
+          </Form.Text>
+        ) : null}
+      </Form>
+      <div className="canvasContainer" id="canvasContainer">
+        <div
+          className="canvas"
+          id="canvas"
+          style={{
+            margin: "10px",
+            textAlign: "center",
+            marginRight: "10px",
+            marginBottom: "10px",
+            border: "cyan",
+            borderStyle: "dotted",
+            backgroundRepeat: "no-repeat",
+            backgroundSize: "contain",
+            backgroundImage: `url(background_home.jpg)`,
+            width: 2160,
+            height: 2160,
+            position: "absolute",
+          }}
+        >
+          {participants.length > 0 &&
+            participants.map((participant, index) => {
+              console.log(
+                participant,
+                `${index}_video_track`,
+                `${index}_audio_track`
+              );
               return (
                 <Draggable
+                  key={index}
                   isLocal={participant.isLocal}
                   children={
                     <>
@@ -481,11 +491,8 @@ class Login extends React.Component {
                 />
               );
             })}
-          </div>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
 }
-
-export default Login;
