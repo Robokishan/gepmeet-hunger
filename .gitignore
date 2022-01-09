@@ -4,3 +4,5 @@ gepmeet/.eslintcache
 gepmeet/.firebaserc
 gepmeet/firebase-debug.log
 gepmeet/.firebase
+gepmeet/.env
+gepmeet/.vscode/settings.json
