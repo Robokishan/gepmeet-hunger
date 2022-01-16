@@ -1,0 +1,148 @@
+@import "./_variables.scss";
+
+.select-cont {
+  span {
+    color: black;
+  }
+}
+.tips {
+  padding: 10px 10px 20px 10px;
+  text-align: center;
+  .pro {
+    font-size: 18px;
+    font-weight: bold;
+    margin-left: 10px;
+  }
+}
+.select {
+  width: 100%;
+  min-width: 15ch;
+  max-width: 30ch;
+  border: none;
+  padding: 0.25em 0.5em;
+  font-size: 1rem;
+  cursor: pointer;
+  line-height: 1.1;
+  background-color: #fff;
+}
+
+.select:focus {
+  border: none;
+  outline: none;
+}
+
+.select-cont {
+  background-color: #fff;
+  border-radius: 0.25em;
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 4px;
+  margin-top: 10px;
+}
+
+.cam-setting {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+
+  .preview {
+    width: 200px;
+    height: 200px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    &.long {
+      height: 210px;
+    }
+
+    video {
+      width: 80% !important;
+      height: 80% !important;
+    }
+
+    .videoPlaceholder {
+      border: solid 5px white;
+      color: white;
+      width: 80% !important;
+      height: 90% !important;
+      align-self: center !important;
+    }
+    .toolKit {
+      display: flex;
+      width: 100%;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+
+      .tool {
+        padding: 10px;
+        height: 50px;
+        width: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        cursor: pointer;
+
+        &.off {
+          background-color: #324146;
+        }
+
+        &:hover {
+          background-color: #324146;
+        }
+      }
+    }
+  }
+}
+
+.flexCenter {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+
+  .button {
+    margin-top: 15px;
+    background-color: $accent-color-1;
+    justify-content: center;
+    color: $grey-5;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 10px;
+    cursor: pointer;
+
+    &:hover {
+      background-color: $accent-color-hover-1;
+    }
+  }
+}
+
+.volMeter {
+}
+
+.loader {
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #3498db;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

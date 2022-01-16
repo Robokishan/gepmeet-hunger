@@ -1,6 +1,4 @@
-import config from "./8x8Config";
-
-const JitsiMeetJS = window.JitsiMeetJS;
+import { config } from "../config";
 
 export type JitsiTrack = {
   isLocal: () => boolean;
@@ -15,7 +13,7 @@ export type JitsiTrack = {
   stream: MediaStream;
 };
 
-type User = {
+export type User = {
   id: string;
   name: string;
   email: string;
@@ -72,6 +70,7 @@ export function JitsiInit(
     isCamOff = !camOn;
   }
   config.bosh += `?room=${roomID}`;
+  const JitsiMeetJS = window.JitsiMeetJS;
   JitsiMeetJS.init({ disableAudioLevels: false });
   console.log({ here: "here", roomID });
   JitsiMeetJS.setLogLevel(JitsiMeetJS.logLevels.WARN);

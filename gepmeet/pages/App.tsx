@@ -1,11 +1,10 @@
-import Login from "./Login";
+import { ReactElement } from "react";
+import { JitsiRoom } from "./JitsiRoom";
 
-function App() {
+export const App = (): ReactElement => {
   return (
     <div className="App">
-      <Login />
+      <JitsiRoom />
     </div>
   );
-}
-
-export default App;
+};

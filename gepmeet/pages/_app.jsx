@@ -1,9 +1,11 @@
 // Global types
-import "../styles/index.css"
-import "../styles/App.css"
-import 'bootstrap/dist/css/bootstrap.min.css';
+import "bootstrap/dist/css/bootstrap.min.css";
+import "../styles/App.css";
+import "../styles/camSettings.scss";
+import "../styles/index.css";
+import "../styles/OnlyDrag.scss";
 
-function MyApp({ Component, pageProps } ) {
+function MyApp({ Component, pageProps }) {
   return <Component {...pageProps} />;
 }
 

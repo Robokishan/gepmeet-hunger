@@ -1,34 +1,35 @@
-import { ReactElement } from "react";
-import { Rnd } from "react-rnd";
-import _ from "lodash";
+import React, { ReactElement } from "react";
+import { Props as DragableProp, Rnd } from "react-rnd";
 
-interface Props {
+interface Props extends DragableProp {
   isLocal: boolean;
-  handleDrag?: any;
   children: React.ReactElement | React.ReactNode;
+  name?: string;
 }
 
 export default function Draggable({
   isLocal,
-  handleDrag,
+  onDrag,
   children,
+  zoom = 1,
+  name = "Sample",
 }: Props): ReactElement {
   return (
     <Rnd
-      onDrag={handleDrag}
-      // onDragStop={() => {dispatch(dragResizeSlice.actions.setDragging(false))}}
+      onDrag={onDrag}
       disableDragging={!isLocal}
       enableResizing={false}
-      // scale={zoom}
-      // position={{x: position.x, y: position.y}}
+      scale={zoom}
       size={{ width: 128, height: 128 }}
-      className="box interactive"
       bounds="#canvas"
       style={{
         borderRadius: "50%",
       }}
     >
-      <div className="content">{children}</div>
+      <React.Fragment>
+        {name && <h6>{name}</h6>}
+        {children}
+      </React.Fragment>
     </Rnd>
   );
 }

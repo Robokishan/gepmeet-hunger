@@ -1,0 +1,18 @@
+.box {
+  background: transparent;
+  color: black;
+  border-radius: 50%;
+  width: 180px;
+  height: 180px;
+  float: left;
+}
+
+.content {
+  height: 100%;
+  width: 100%;
+
+  img {
+    height: 90%;
+    width: 100%;
+  }
+}

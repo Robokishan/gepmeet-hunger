@@ -1,5 +1,5 @@
 import Head from "next/head";
-import App from "./App";
+import { App } from "./App";
 
 export default function index() {
   return (
@@ -23,6 +23,11 @@ export default function index() {
         type="text/javascript"
         src="https://8x8.vc/libs/lib-jitsi-meet.min.js"
       ></script>
+      <link
+        href="https://fonts.googleapis.com/icon?family=Material+Icons"
+        rel="stylesheet"
+      />
+      <script type="text/javascript" src="/volMeter.js"></script>
       <App />
     </>
   );
