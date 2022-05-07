@@ -20,6 +20,7 @@ const Index = () => {
     method: "get",
   });
 
+  // enable logger for mediasoup
   useEffect(() => localStorage.setItem("debug", "mediasoup-client:*"), []);
 
   useEffect(() => {
