@@ -15,7 +15,7 @@ const Index = () => {
 
   let device;
 
-  const { data, isLoading } = useAxiosClient<RTPType>({
+  const { data, isLoading, error } = useAxiosClient<RTPType>({
     url: API.GET_RTP_CAPABILITIES,
     method: "get",
   });
@@ -64,7 +64,7 @@ const Index = () => {
     <Container height="100vh">
       <Flex margin="50px 0px 0px 0px" direction="row" height="100%">
         {isLoading && <Text>Loading...</Text>}
-        {!isLoading && data && (
+        {!isLoading && !error && data && (
           <Flex alignItems="center" gap="50px" direction="column">
             <Text>Worker ID: {data.worker}</Text>
             <Flex gap="10px">
@@ -114,6 +114,7 @@ const Index = () => {
             </Flex>
           </Flex>
         )}
+        {!isLoading && error && <Text color="red">Something went wrong</Text>}
       </Flex>
       <DarkModeSwitch />
     </Container>

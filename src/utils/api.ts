@@ -1,4 +1,4 @@
 export enum API {
-  GET_RTP_CAPABILITIES = "/api/v1/router/getrtp",
-  CREATE_ROOM = "/api/v1/create",
+  GET_RTP_CAPABILITIES = "/api/voice/getrtp",
+  CREATE_ROOM = "/api/room/v1/create",
 }
