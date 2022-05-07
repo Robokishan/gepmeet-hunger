@@ -5,19 +5,29 @@ import { DarkModeSwitch } from "../components/DarkModeSwitch";
 import useAxiosClient from "../utils/useAxiosClient";
 import { API } from "../utils/api";
 import { RTPType } from "../utils/rtpTypes";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowRightIcon } from "@chakra-ui/icons";
 import axiosClient from "../utils/axiosClient";
+import { createProducerTransport } from "../utils/voice";
 
 const Index = () => {
   const [roomId, setroomId] = useState("");
-  const [isError, setIsError] = useState(false);
 
   let device;
 
-  const { data, isLoading, error } = useAxiosClient<RTPType>({
+  const body = useMemo(
+    () => ({
+      params: {
+        roomId,
+      },
+    }),
+    [roomId]
+  );
+
+  const { data, error, mutate } = useAxiosClient<RTPType>({
     url: API.GET_RTP_CAPABILITIES,
     method: "get",
+    body,
   });
 
   // enable logger for mediasoup
@@ -27,7 +37,7 @@ const Index = () => {
     if (data?.router) {
       loadDevice(data.router);
     }
-  }, [data, isLoading]);
+  }, [data, error]);
 
   async function loadDevice(routerRtpCapabilities) {
     try {
@@ -41,56 +51,56 @@ const Index = () => {
   }
 
   const connectRoom = async () => {
+    try {
+      if (!roomId) {
+        return;
+      }
+      const { data } = await createProducerTransport(roomId);
+      console.log(data);
+    } catch (error) {}
+  };
+
+  const createRoom = async () => {
     if (!roomId) {
       console.log("Room not found");
-      setIsError(true);
     } else {
       try {
-        const { data } = await axiosClient.post(API.CREATE_ROOM);
+        const { data } = await axiosClient.post(API.CREATE_ROOM, { roomId });
         console.log(data);
-        setIsError(false);
+        mutate();
       } catch (error) {
-        setIsError(true);
         console.error(error);
       }
     }
   };
 
-  const createRoom = async () => {
-    console.log("Creating Room");
-  };
-
   return (
     <Container height="100vh">
-      <Flex margin="50px 0px 0px 0px" direction="row" height="100%">
-        {isLoading && <Text>Loading...</Text>}
-        {!isLoading && !error && data && (
-          <Flex alignItems="center" gap="50px" direction="column">
-            <Text>Worker ID: {data.worker}</Text>
-            <Flex gap="10px">
-              <Input
-                variant="outline"
-                isInvalid={isError}
-                placeholder="Enter Room ID"
-                onChange={(e) => setroomId(e.target.value)}
-              />
+      <Flex margin="50px 0px 0px 0px" gap="10px">
+        <Input
+          variant="outline"
+          placeholder="Enter Room ID"
+          onChange={(e) => setroomId(e.target.value)}
+        />
 
-              <Button
-                colorScheme={isError ? "red" : "facebook"}
-                onClick={connectRoom}
-              >
-                <ArrowRightIcon />
-              </Button>
-            </Flex>
-            <Flex>
-              <Button
-                colorScheme="messenger"
-                rounded="button"
-                onClick={createRoom}
-              >
-                Create Room
-              </Button>
-            </Flex>
+        <Button onClick={connectRoom}>
+          <ArrowRightIcon />
+        </Button>
+      </Flex>
+      <Flex margin="50px 0px 0px 0px" direction="row" height="100%">
+        <Flex alignItems="center" gap="50px" direction="column">
+          {data?.worker && <Text>Worker ID: {data.worker}</Text>}
+
+          <Flex>
+            <Button
+              colorScheme="messenger"
+              rounded="button"
+              onClick={createRoom}
+            >
+              Create Room
+            </Button>
+          </Flex>
+          {data?.worker && (
             <Flex
               borderRadius="20px"
               padding="10px"
@@ -102,20 +112,20 @@ const Index = () => {
             >
               <Text>{JSON.stringify(data, null, 2)}</Text>
             </Flex>
-            <Flex gap="20px" alignItems="center" direction="column">
-              <Text>Remote Video</Text>
-              <video id="remote_video" controls></video>
-            </Flex>
-
-            <Flex margin="10px 0px 100px 0px" gap="10px" alignItems="center">
-              <Button variant="solid" colorScheme="green" rounded="button">
-                Connect
-              </Button>
-            </Flex>
+          )}
+          <Flex gap="20px" alignItems="center" direction="column">
+            <Text>Remote Video</Text>
+            <video id="remote_video" controls></video>
           </Flex>
-        )}
-        {!isLoading && error && <Text color="red">Something went wrong</Text>}
+
+          <Flex margin="10px 0px 100px 0px" gap="10px" alignItems="center">
+            <Button variant="solid" colorScheme="green" rounded="button">
+              Watch
+            </Button>
+          </Flex>
+        </Flex>
       </Flex>
+      {error && <Text color="red">Error</Text>}
       <DarkModeSwitch />
     </Container>
   );
