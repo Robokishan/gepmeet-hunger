@@ -35,3 +35,31 @@ export const connectConsumerTransport = async (
     params: { roomId },
   });
 };
+
+export const produce = async (roomId, transport, kind, rtpParameters) => {
+  return await axiosClient.patch(
+    API.PRODUCE,
+    {
+      transportId: transport.id,
+      kind,
+      rtpParameters,
+    },
+    { params: { roomId } }
+  );
+};
+
+export const createRoom = async (roomId) => {
+  await axiosClient.post(API.CREATE_ROOM, { roomId });
+};
+
+export const resume = async (roomId) => {
+  return await axiosClient.get(API.RESUME, { params: { roomId } });
+};
+
+export const consumeConsumer = async (roomId, rtpCapabilities) => {
+  return await axiosClient.post(
+    API.CONSUME,
+    { rtpCapabilities },
+    { params: { roomId } }
+  );
+};

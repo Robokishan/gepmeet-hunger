@@ -7,12 +7,15 @@ import { API } from "../utils/api";
 import { RTPType } from "../utils/rtpTypes";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRightIcon } from "@chakra-ui/icons";
-import axiosClient from "../utils/axiosClient";
 import {
   connectConsumerTransport,
   connectProducerTransport,
+  consumeConsumer,
   createConsumerTransport,
   createProducerTransport,
+  createRoom,
+  produce,
+  resume,
 } from "../utils/voice";
 import { getUserMedia } from "../utils/media";
 import socketClient from "socket.io-client";
@@ -87,14 +90,11 @@ const Index = () => {
         "produce",
         async ({ kind, rtpParameters }, callback, errback) => {
           try {
-            const { data } = await axiosClient.patch(
-              API.PRODUCE,
-              {
-                transportId: transport.id,
-                kind,
-                rtpParameters,
-              },
-              { params: { roomId } }
+            const { data } = await produce(
+              roomId,
+              transport,
+              kind,
+              rtpParameters
             );
             callback({ id: data.id });
           } catch (error) {
@@ -136,10 +136,10 @@ const Index = () => {
     }
   };
 
-  const createRoom = async () => {
+  const create = async () => {
     if (roomId) {
       try {
-        await axiosClient.post(API.CREATE_ROOM, { roomId });
+        await createRoom(roomId);
         mutate();
       } catch (error) {
         console.error(error);
@@ -169,7 +169,7 @@ const Index = () => {
 
           case "connected":
             document.querySelector("#remote_video").srcObject = await stream;
-            await axiosClient.get(API.RESUME, { params: { roomId } });
+            resume(roomId);
             break;
 
           case "failed":
@@ -189,11 +189,7 @@ const Index = () => {
 
   async function consume(transport) {
     const { rtpCapabilities } = device;
-    const { data } = await axiosClient.post(
-      API.CONSUME,
-      { rtpCapabilities },
-      { params: { roomId } }
-    );
+    const { data } = await consumeConsumer(roomId, rtpCapabilities);
     const { producerId, id, kind, rtpParameters } = data;
 
     let codecOptions = {};
@@ -227,11 +223,7 @@ const Index = () => {
           {data?.worker && <Text>Worker ID: {data.worker}</Text>}
           {streamError && <Text color="red">{streamError}</Text>}
           <Flex>
-            <Button
-              colorScheme="messenger"
-              rounded="button"
-              onClick={createRoom}
-            >
+            <Button colorScheme="messenger" rounded="button" onClick={create}>
               Create Room
             </Button>
           </Flex>
