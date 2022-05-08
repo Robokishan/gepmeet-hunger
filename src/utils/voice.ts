@@ -4,18 +4,34 @@ import axiosClient from "./axiosClient";
 
 export const createProducerTransport = async (roomId: string): Promise<any> => {
   return await axiosClient.post(
-    API.CREATE_PRODUCER_TRANSPORT,
+    API.CREATE_PRODUCER,
     {},
-    { params: roomId }
+    { params: { roomId } }
+  );
+};
+
+export const createConsumerTransport = async (roomId: string): Promise<any> => {
+  return await axiosClient.post(
+    API.CREATE_CONSUMER,
+    {},
+    { params: { roomId } }
   );
 };
 
 export const connectProducerTransport = async (
-  roomId: string
+  roomId: string,
+  body
 ): Promise<AxiosResponse | AxiosError> => {
-  return await axiosClient.patch(
-    API.CONNECT_PRODUCER_TRANSPORT,
-    {},
-    { params: roomId }
-  );
+  return await axiosClient.patch(API.CONNECT_PRODUCER, body, {
+    params: { roomId },
+  });
+};
+
+export const connectConsumerTransport = async (
+  roomId: string,
+  body
+): Promise<AxiosResponse | AxiosError> => {
+  return await axiosClient.patch(API.CONNECT_CONSUMER, body, {
+    params: { roomId },
+  });
 };

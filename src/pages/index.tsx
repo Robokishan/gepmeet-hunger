@@ -8,12 +8,22 @@ import { RTPType } from "../utils/rtpTypes";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRightIcon } from "@chakra-ui/icons";
 import axiosClient from "../utils/axiosClient";
-import { createProducerTransport } from "../utils/voice";
+import {
+  connectConsumerTransport,
+  connectProducerTransport,
+  createConsumerTransport,
+  createProducerTransport,
+} from "../utils/voice";
+import { getUserMedia } from "../utils/media";
+import socketClient from "socket.io-client";
+import socketPromise from "../utils/socket.io-promise";
+import { Transport } from "mediasoup-client/lib/Transport";
 
+let device: Device;
+let transport: Transport;
 const Index = () => {
   const [roomId, setroomId] = useState("");
-
-  let device;
+  const [streamError, setStreamError] = useState("");
 
   const body = useMemo(
     () => ({
@@ -31,7 +41,10 @@ const Index = () => {
   });
 
   // enable logger for mediasoup
-  useEffect(() => localStorage.setItem("debug", "mediasoup-client:*"), []);
+  useEffect(() => {
+    localStorage.setItem("debug", "mediasoup-client:*");
+    // localStorage.setItem("debug", "");
+  }, []);
 
   useEffect(() => {
     if (data?.router) {
@@ -55,24 +68,146 @@ const Index = () => {
       if (!roomId) {
         return;
       }
+
       const { data } = await createProducerTransport(roomId);
-      console.log(data);
-    } catch (error) {}
+      transport = device.createSendTransport(data);
+
+      transport.on("connect", async ({ dtlsParameters }, callback, errback) => {
+        try {
+          const data = await connectProducerTransport(roomId, {
+            dtlsParameters,
+          });
+        } catch (error) {
+          console.error(error);
+        }
+        callback();
+      });
+
+      transport.on(
+        "produce",
+        async ({ kind, rtpParameters }, callback, errback) => {
+          try {
+            const { data } = await axiosClient.patch(
+              API.PRODUCE,
+              {
+                transportId: transport.id,
+                kind,
+                rtpParameters,
+              },
+              { params: { roomId } }
+            );
+            callback({ id: data.id });
+          } catch (error) {
+            console.error(error);
+          }
+        }
+      );
+
+      let stream;
+      transport.on("connectionstatechange", (state) => {
+        switch (state) {
+          case "connecting":
+            break;
+
+          case "connected":
+            document.querySelector("#local_video").srcObject = stream;
+            break;
+
+          case "failed":
+            transport.close();
+            break;
+
+          default:
+            break;
+        }
+      });
+
+      try {
+        stream = await getUserMedia(device);
+        const track = stream.getVideoTracks()[0];
+        const params = { track };
+        await transport.produce(params);
+      } catch (error) {
+        console.error(error);
+        setStreamError(error.message);
+      }
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const createRoom = async () => {
-    if (!roomId) {
-      console.log("Room not found");
-    } else {
+    if (roomId) {
       try {
-        const { data } = await axiosClient.post(API.CREATE_ROOM, { roomId });
-        console.log(data);
+        await axiosClient.post(API.CREATE_ROOM, { roomId });
         mutate();
       } catch (error) {
         console.error(error);
       }
     }
   };
+
+  const subscribe = async () => {
+    try {
+      const { data } = await createConsumerTransport(roomId);
+      const transport = device.createRecvTransport(data);
+      transport.on("connect", async ({ dtlsParameters }, callback, errback) => {
+        try {
+          const data = await connectConsumerTransport(roomId, {
+            dtlsParameters,
+          });
+        } catch (error) {
+          console.error(error);
+        }
+        callback();
+      });
+
+      transport.on("connectionstatechange", async (state) => {
+        switch (state) {
+          case "connecting":
+            break;
+
+          case "connected":
+            document.querySelector("#remote_video").srcObject = await stream;
+            await axiosClient.get(API.RESUME, { params: { roomId } });
+            break;
+
+          case "failed":
+            transport.close();
+            break;
+
+          default:
+            break;
+        }
+      });
+
+      const stream = consume(transport);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  async function consume(transport) {
+    const { rtpCapabilities } = device;
+    const { data } = await axiosClient.post(
+      API.CONSUME,
+      { rtpCapabilities },
+      { params: { roomId } }
+    );
+    const { producerId, id, kind, rtpParameters } = data;
+
+    let codecOptions = {};
+    const consumer = await transport.consume({
+      id,
+      producerId,
+      kind,
+      rtpParameters,
+      codecOptions,
+    });
+    const stream = new MediaStream();
+    stream.addTrack(consumer.track);
+    return stream;
+  }
 
   return (
     <Container height="100vh">
@@ -90,7 +225,7 @@ const Index = () => {
       <Flex margin="50px 0px 0px 0px" direction="row" height="100%">
         <Flex alignItems="center" gap="50px" direction="column">
           {data?.worker && <Text>Worker ID: {data.worker}</Text>}
-
+          {streamError && <Text color="red">{streamError}</Text>}
           <Flex>
             <Button
               colorScheme="messenger"
@@ -114,12 +249,19 @@ const Index = () => {
             </Flex>
           )}
           <Flex gap="20px" alignItems="center" direction="column">
-            <Text>Remote Video</Text>
-            <video id="remote_video" controls></video>
+            <Text>My Video</Text>
+            <video id="local_video" autoPlay controls></video>
           </Flex>
 
           <Flex margin="10px 0px 100px 0px" gap="10px" alignItems="center">
-            <Button variant="solid" colorScheme="green" rounded="button">
+            <Text>Remote Video</Text>
+            <video id="remote_video" autoPlay playsInline controls></video>
+            <Button
+              onClick={subscribe}
+              variant="solid"
+              colorScheme="green"
+              rounded="button"
+            >
               Watch
             </Button>
           </Flex>
