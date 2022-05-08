@@ -253,9 +253,13 @@ const Index = () => {
             <video id="local_video" autoPlay controls></video>
           </Flex>
 
-          <Flex margin="10px 0px 100px 0px" gap="10px" alignItems="center">
+          <Flex
+            direction="column"
+            margin="10px 0px 100px 0px"
+            gap="10px"
+            alignItems="center"
+          >
             <Text>Remote Video</Text>
-            <video id="remote_video" autoPlay playsInline controls></video>
             <Button
               onClick={subscribe}
               variant="solid"
@@ -264,6 +268,7 @@ const Index = () => {
             >
               Watch
             </Button>
+            <video id="remote_video" autoPlay playsInline controls></video>
           </Flex>
         </Flex>
       </Flex>
