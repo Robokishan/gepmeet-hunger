@@ -5,7 +5,7 @@ import { DarkModeSwitch } from "../components/DarkModeSwitch";
 import useAxiosClient from "../utils/useAxiosClient";
 import { API } from "../utils/api";
 import { RTPType } from "../utils/rtpTypes";
-import { useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { ArrowRightIcon } from "@chakra-ui/icons";
 import {
   connectConsumerTransport,
@@ -18,16 +18,24 @@ import {
   resume,
 } from "../utils/voice";
 import { getUserMedia } from "../utils/media";
-import socketClient from "socket.io-client";
-import socketPromise from "../utils/socket.io-promise";
 import { Transport } from "mediasoup-client/lib/Transport";
+import SocketManager from "../utils/socket";
+import {
+  SOCKET_NAMESPACE_ZOOMED_OUT_VIEW,
+  SOCKET_CHANNEL_DEVICE_UPDATE,
+} from "../utils/constant";
+import { SocketContext } from "../modules/SocketProvider";
+import Router from "next/router";
 
 let device: Device;
 let transport: Transport;
+
 const Index = () => {
+  Router.push("/room");
+  return null;
   const [roomId, setroomId] = useState("");
   const [streamError, setStreamError] = useState("");
-
+  const socket = useContext<SocketManager>(SocketContext);
   const body = useMemo(
     () => ({
       params: {
@@ -214,7 +222,12 @@ const Index = () => {
           onChange={(e) => setroomId(e.target.value)}
         />
 
-        <Button onClick={connectRoom}>
+        <Button
+          onClick={() => {
+            connectRoom();
+            connectRoom();
+          }}
+        >
           <ArrowRightIcon />
         </Button>
       </Flex>
@@ -253,7 +266,10 @@ const Index = () => {
           >
             <Text>Remote Video</Text>
             <Button
-              onClick={subscribe}
+              onClick={() => {
+                subscribe();
+                subscribe();
+              }}
               variant="solid"
               colorScheme="green"
               rounded="button"

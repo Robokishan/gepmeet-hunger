@@ -1,0 +1,13 @@
+query getConversations {
+  GetConversations {
+    description
+    id
+    title
+    members {
+      type
+      user {
+        name
+      }
+    }
+  }
+}

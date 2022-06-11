@@ -1,0 +1,7 @@
+mutation CreateConversation($options: ConversationInput!) {
+  CreateConversation(options: $options) {
+    id
+    title
+    description
+  }
+}
