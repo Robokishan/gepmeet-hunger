@@ -32,7 +32,7 @@ class SocketManager {
     });
   }
 
-  listen(channel: string, callback: (data: string) => void): void {
+  listen(channel: string, callback: (data: unknown) => void): void {
     this.socket.on(channel, callback);
   }
 

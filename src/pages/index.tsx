@@ -225,7 +225,6 @@ const Index = () => {
         <Button
           onClick={() => {
             connectRoom();
-            connectRoom();
           }}
         >
           <ArrowRightIcon />
@@ -267,7 +266,6 @@ const Index = () => {
             <Text>Remote Video</Text>
             <Button
               onClick={() => {
-                subscribe();
                 subscribe();
               }}
               variant="solid"

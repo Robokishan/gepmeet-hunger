@@ -93,7 +93,6 @@ export default function Registration(): ReactElement {
             </Text>
             <Text whiteSpace="pre" fontSize="3xl">
               <Link color="teal" href="/login">
-                {" "}
                 Login
               </Link>
             </Text>
