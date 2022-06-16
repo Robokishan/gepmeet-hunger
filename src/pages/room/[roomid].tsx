@@ -38,7 +38,7 @@ let mediasoupHandshake: MediaSoupHandshake = null;
 export default function Room(): ReactElement {
   const router = useRouter();
   const socket = useContext<SocketManager>(SocketContext);
-  const [consumers, setConsumers] = useState<Array<Consumer>>();
+  const [consumers, setConsumers] = useState<Array<Array<Consumer>>>();
 
   const [isConnected, setIsConnected] = useState<
     "Disconnect" | "Connecting" | "Connected"
@@ -168,18 +168,19 @@ export default function Room(): ReactElement {
       MediaSoupSocket.consume,
       { rtpCapabilities: mediasoupHandshake.getrtpCapabilities() }
     );
-    const consumers: Consumer[] = [];
-    console.log(consumerResponse);
+    const consumers: Array<Array<Consumer>> = [];
     if (consumerResponse?.consumerParameters?.length > 0) {
       for (const consumerParam of consumerResponse.consumerParameters) {
-        const _consumer = await mediasoupHandshake.consume(consumerParam);
-        consumers.push(_consumer);
-      }
+        const _con: Array<Consumer> = [];
+        for (const consumer of consumerParam) {
+          const _consumer = await mediasoupHandshake.consume(consumer);
+          _con.push(_consumer);
+        }
 
+        consumers.push(_con);
+      }
       setConsumers(consumers);
     }
-
-    // setConsumers(mediasoupHandshake.consumers);
   };
 
   const init = () => {
@@ -245,13 +246,14 @@ export default function Room(): ReactElement {
             )}
             {consumers?.map((consumer) => {
               const stream = new MediaStream();
-              stream.addTrack(consumer.track);
+              console.log(consumer);
+              consumer.forEach((_con) => stream.addTrack(_con.track));
               return (
                 <MediaTrack
-                  id={consumer.id}
+                  id={consumer[0].id}
                   videoSrc={stream}
                   isLocal={false}
-                  key={consumer.id}
+                  key={consumer[0].id}
                 />
               );
             })}

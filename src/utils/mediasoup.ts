@@ -245,11 +245,13 @@ class MediaSoupHandshake {
     return this._device.rtpCapabilities;
   }
 
-  async produce(stream: MediaStream): Promise<Producer> {
-    const track = stream.getVideoTracks()[0];
-    const producer = await this._sendTransport.produce({ track });
-    this.producers.set(producer.id, producer);
-    return producer;
+  async produce(stream: MediaStream) {
+    // fix getting tracks
+    // const track = stream.getVideoTracks()[0];
+    for (const track of stream.getTracks()) {
+      const producer = await this._sendTransport.produce({ track });
+      this.producers.set(producer.id, producer);
+    }
   }
 
   removeProducer(id: string) {
