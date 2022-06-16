@@ -169,11 +169,16 @@ export default function Room(): ReactElement {
       { rtpCapabilities: mediasoupHandshake.getrtpCapabilities() }
     );
     const consumers: Consumer[] = [];
-    for (const consumerParam of consumerResponse.consumerParameters) {
-      const _consumer = await mediasoupHandshake.consume(consumerParam);
-      consumers.push(_consumer);
+    console.log(consumerResponse);
+    if (consumerResponse?.consumerParameters?.length > 0) {
+      for (const consumerParam of consumerResponse.consumerParameters) {
+        const _consumer = await mediasoupHandshake.consume(consumerParam);
+        consumers.push(_consumer);
+      }
+
+      setConsumers(consumers);
     }
-    setConsumers(consumers);
+
     // setConsumers(mediasoupHandshake.consumers);
   };
 
