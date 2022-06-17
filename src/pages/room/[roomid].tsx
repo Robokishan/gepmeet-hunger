@@ -168,7 +168,7 @@ export default function Room(): ReactElement {
       MediaSoupSocket.consume,
       { rtpCapabilities: mediasoupHandshake.getrtpCapabilities() }
     );
-    const consumers: Array<Array<Consumer>> = [];
+    const _consumers: Array<Array<Consumer>> = [];
     if (consumerResponse?.consumerParameters?.length > 0) {
       for (const consumerParam of consumerResponse.consumerParameters) {
         const _con: Array<Consumer> = [];
@@ -177,9 +177,9 @@ export default function Room(): ReactElement {
           _con.push(_consumer);
         }
 
-        consumers.push(_con);
+        _consumers.push(_con);
       }
-      setConsumers(consumers);
+      setConsumers(_consumers);
     }
   };
 

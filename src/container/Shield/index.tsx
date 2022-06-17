@@ -24,19 +24,19 @@ const didAuthError = ({ error }) => {
   return error.graphQLErrors.some((e) => e.response.status === 401);
 };
 
-const errorExchange: Exchange =
-  ({ forward }) =>
-  (ops$) => {
-    return pipe(
-      forward(ops$),
-      tap(({ error }) => {
-        console.log(error);
-        if (error?.message.includes("not authenticated")) {
-          Router.replace("/login");
-        }
-      })
-    );
-  };
+// const errorExchange: Exchange =
+//   ({ forward }) =>
+//   (ops$) => {
+//     return pipe(
+//       forward(ops$),
+//       tap(({ error }) => {
+//         console.log(error);
+//         if (error?.message.includes("not authenticated")) {
+//           Router.replace("/login");
+//         }
+//       })
+//     );
+//   };
 
 const client = createClient({
   url: process.env.NEXT_PUBLIC_MAIN_URL,
