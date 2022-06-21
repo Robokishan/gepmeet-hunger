@@ -29,8 +29,8 @@ type onProduceArg = {
   rtpParameters: any;
 };
 
-interface RoomData {
-  consumerParameters: ConsumerOptions[];
+interface CreateConsumerArg {
+  consumerParameters: Record<string, Array<ConsumerOptions>>;
 }
 
 let mediasoupHandshake: MediaSoupHandshake = null;
@@ -38,7 +38,9 @@ let mediasoupHandshake: MediaSoupHandshake = null;
 export default function Room(): ReactElement {
   const router = useRouter();
   const socket = useContext<SocketManager>(SocketContext);
-  const [consumers, setConsumers] = useState<Array<Array<Consumer>>>();
+  const [consumersList, setConsumersList] = useState<
+    Record<string, Array<Consumer>>
+  >({});
 
   const [isConnected, setIsConnected] = useState<
     "Disconnect" | "Connecting" | "Connected"
@@ -47,8 +49,8 @@ export default function Room(): ReactElement {
   const [stream, setStream] = useState<MediaStream>();
 
   useEffect(() => {
-    console.log("Consumers", consumers);
-  }, [consumers]);
+    console.log("Consumers", consumersList);
+  }, [consumersList]);
 
   useEffect(() => {
     socket.listen(MediaSoupSocket.roomAssigned, async () => {
@@ -57,16 +59,35 @@ export default function Room(): ReactElement {
       await connectTransportToConversation();
     });
 
-    // socket.listen(MediaSoupSocket.listenConsumers, async (data: RoomData) => {
-    //   console.log(data);
-    //   data.consumerParameters.forEach(async (consumerParameter) => {
-    //     await mediasoupHandshake.consume(consumerParameter);
-    //   });
-    //   setConsumers(mediasoupHandshake.consumers);
-    // });
+    socket.listen(
+      MediaSoupSocket.listenConsumers,
+      async (consumerResponse: CreateConsumerArg) => {
+        addConsumers(consumerResponse);
+      }
+    );
+    socket.listen("newuserjoin", async (data: any) => {
+      const { producerId, userId } = data;
+      const response: CreateConsumerArg = (await socket.request(
+        MediaSoupSocket.consumeUser,
+        {
+          userId,
+          producerIds: [producerId],
+          rtpCapabilities: mediasoupHandshake.getrtpCapabilities(),
+        }
+      )) as any;
+      addConsumers(response);
+    });
   }, []);
 
-  useEffect(() => init(), []);
+  useEffect(() => {
+    socket.listen("userleft", (data: any) => {
+      removeConsumers(data.userId);
+    });
+  }, [consumersList]);
+
+  useEffect(() => {
+    joinRoom();
+  }, []);
 
   const [{ data, fetching, error }] = useGetConversationQuery({
     pause: !router.query.roomid,
@@ -75,11 +96,12 @@ export default function Room(): ReactElement {
     },
   });
 
-  const joinConversation = async () => {
+  const joinRoom = async () => {
     const data = await socket.request(MediaSoupSocket.startNegotiation, {
       roomId: router.query.roomid as string,
       userId: (jwt_decode(getCookie(CookieKeys.token)) as any).userId,
     });
+    // tood: check if room allocated if not then start again
   };
 
   const getRouterRtpCapabilities = async () => {
@@ -161,30 +183,41 @@ export default function Room(): ReactElement {
     await mediasoupHandshake.produce(stream);
     setStream(stream);
     setIsConnected("Connected");
+    trackSubcribe();
   };
 
   const trackSubcribe = async () => {
-    const consumerResponse: any = await socket.request(
+    const consumerResponse: CreateConsumerArg = (await socket.request(
       MediaSoupSocket.consume,
-      { rtpCapabilities: mediasoupHandshake.getrtpCapabilities() }
-    );
-    const _consumers: Array<Array<Consumer>> = [];
-    if (consumerResponse?.consumerParameters?.length > 0) {
-      for (const consumerParam of consumerResponse.consumerParameters) {
-        const _con: Array<Consumer> = [];
-        for (const consumer of consumerParam) {
-          const _consumer = await mediasoupHandshake.consume(consumer);
-          _con.push(_consumer);
-        }
-
-        _consumers.push(_con);
+      {
+        rtpCapabilities: mediasoupHandshake.getrtpCapabilities(),
       }
-      setConsumers(_consumers);
-    }
+    )) as any;
+    addConsumers(consumerResponse);
   };
 
-  const init = () => {
-    joinConversation();
+  const addConsumers = async (consumerResponse: CreateConsumerArg) => {
+    const _consumers: Record<string, Array<Consumer>> = {};
+    for (const key in consumerResponse.consumerParameters) {
+      const consumerRequest = [];
+      for (const consumer of consumerResponse.consumerParameters[key]) {
+        consumerRequest.push(mediasoupHandshake.consume(consumer));
+      }
+      _consumers[key] = await Promise.all(consumerRequest);
+    }
+    setConsumersList((prevConsumer) => ({ ...prevConsumer, ..._consumers }));
+  };
+
+  const removeConsumers = async (userId: string) => {
+    if (userId && consumersList[userId]) {
+      console.log(consumersList[userId]);
+      consumersList[userId].forEach((consumer) => consumer.close());
+      setConsumersList((prevConsumer) => {
+        const _temp_copy = { ...prevConsumer };
+        delete _temp_copy[userId];
+        return _temp_copy;
+      });
+    }
   };
 
   if (fetching) return <div>Loading</div>;
@@ -224,6 +257,17 @@ export default function Room(): ReactElement {
               Subscribe
             </Button>
 
+            <Button
+              disabled={isConnected != "Connected"}
+              onClick={() => {
+                socket.disconnect();
+                setConsumersList({});
+              }}
+              colorScheme="red"
+            >
+              Leave
+            </Button>
+
             <Link style={{ textDecoration: "none" }} href="/room">
               <Button colorScheme="orange">Rooms List</Button>
             </Link>
@@ -244,16 +288,16 @@ export default function Room(): ReactElement {
                 id={(jwt_decode(getCookie(CookieKeys.token)) as any).userId}
               />
             )}
-            {consumers?.map((consumer) => {
+            {Object.keys(consumersList)?.map((uid) => {
+              const consumer = consumersList[uid];
               const stream = new MediaStream();
-              console.log(consumer);
               consumer.forEach((_con) => stream.addTrack(_con.track));
               return (
                 <MediaTrack
-                  id={consumer[0].id}
+                  id={uid}
                   videoSrc={stream}
                   isLocal={false}
-                  key={consumer[0].id}
+                  key={uid}
                 />
               );
             })}

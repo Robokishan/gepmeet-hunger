@@ -5,6 +5,7 @@ import { RtpCapabilities } from "mediasoup-client/lib/RtpParameters";
 import { Transport, TransportOptions } from "mediasoup-client/lib/Transport";
 
 export enum MediaSoupSocket {
+  consumeUser = "consumeUser",
   startNegotiation = "startNegotiation",
   roomAssigned = "roomAssigned",
   listenConsumers = "listenConsumers",
@@ -159,7 +160,6 @@ class MediaSoupHandshake {
             kind,
             rtpParameters,
           });
-          console.log({ producerResponse });
           callback({ id: producerResponse.id });
         } catch (error) {
           console.error(error);
@@ -177,7 +177,6 @@ class MediaSoupHandshake {
 
           case MediasoupTransport.connected:
             onConnect("send");
-            // document.querySelector("#local_video").srcObject = stream;
             break;
 
           case MediasoupTransport.failed:
@@ -201,7 +200,6 @@ class MediaSoupHandshake {
       async ({ dtlsParameters }, callback, errback) => {
         try {
           const data = await connCallback({ dtlsParameters });
-          console.log(data);
           callback();
         } catch (error) {
           console.error(error);
@@ -213,15 +211,12 @@ class MediaSoupHandshake {
     this._recvTransport.on(
       MediasoupTransport.connectionstatechange,
       async (state) => {
-        console.log("MediasoupState:", state);
         switch (state) {
           case MediasoupTransport.connecting:
             break;
 
           case MediasoupTransport.connected:
             onConnect("recv");
-            // document.querySelector("#remote_video").srcObject = await stream;
-            // resume(roomId);
             break;
 
           case MediasoupTransport.failed:
@@ -247,7 +242,6 @@ class MediaSoupHandshake {
 
   async produce(stream: MediaStream) {
     // fix getting tracks
-    // const track = stream.getVideoTracks()[0];
     for (const track of stream.getTracks()) {
       const producer = await this._sendTransport.produce({ track });
       this.producers.set(producer.id, producer);
