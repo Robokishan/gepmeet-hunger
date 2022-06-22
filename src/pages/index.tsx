@@ -23,15 +23,18 @@ import SocketManager from "../utils/socket";
 import {
   SOCKET_NAMESPACE_ZOOMED_OUT_VIEW,
   SOCKET_CHANNEL_DEVICE_UPDATE,
+  CookieKeys,
 } from "../utils/constant";
 import { SocketContext } from "../modules/SocketProvider";
 import Router from "next/router";
+import { getCookie } from "../utils/cookieManager";
 
 let device: Device;
 let transport: Transport;
 
 const Index = () => {
-  Router.push("/room");
+  if (getCookie(CookieKeys.token)) Router.push("/room");
+  else Router.push("/login");
   return null;
   // const [roomId, setroomId] = useState("");
   // const [streamError, setStreamError] = useState("");

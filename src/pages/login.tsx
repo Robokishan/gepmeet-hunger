@@ -10,10 +10,12 @@ import {
 } from "@chakra-ui/react";
 import { FormikHelpers, useFormik } from "formik";
 import Link from "next/link";
-import { useRouter } from "next/router";
+import Router, { useRouter } from "next/router";
 import React, { ReactElement, useState } from "react";
 import * as Yup from "yup";
 import { LoginInput, useLoginMutation } from "../generated/graphql";
+import { CookieKeys } from "../utils/constant";
+import { getCookie, setCookie } from "../utils/cookieManager";
 
 const loginValidation = Yup.object({
   email: Yup.string().email().required(),
@@ -38,6 +40,8 @@ export default function Login(): ReactElement {
     initialValues: loginInitials,
   });
 
+  if (getCookie(CookieKeys.token)) Router.push("/room");
+
   async function onLoginFormSubmit(
     values: LoginInput,
     { setSubmitting, validateForm }: FormikHelpers<LoginInput>
@@ -53,8 +57,12 @@ export default function Login(): ReactElement {
           isClosable: true,
           duration: 3000,
         });
+        setCookie(
+          CookieKeys.token,
+          data.login.user.token.access_token,
+          Number(data.login.user.token.expires_in)
+        );
         router.push("/room");
-        localStorage.setItem("token", data.login.user.token.access_token);
       } else if (data?.login?.errors) {
         toast({
           title: "Login Failed!",
