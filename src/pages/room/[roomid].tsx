@@ -204,8 +204,18 @@ export default function Room(): ReactElement {
         consumerRequest.push(mediasoupHandshake.consume(consumer));
       }
       _consumers[key] = await Promise.all(consumerRequest);
+      console.log("_consumer", _consumers[key]);
+      setConsumersList((prevuid) => {
+        let _prevConsumers = prevuid[key] ?? [];
+        let newConsumerlist = {
+          ...prevuid,
+          [key]: [..._prevConsumers, ..._consumers[key]],
+        };
+        console.log({ newConsumerlist });
+        return newConsumerlist;
+      });
     }
-    setConsumersList((prevConsumer) => ({ ...prevConsumer, ..._consumers }));
+    // setConsumersList((prevConsumer) => ({ ...prevConsumer, ..._consumers }));
   };
 
   const removeConsumers = async (userId: string) => {
