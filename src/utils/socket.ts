@@ -1,17 +1,20 @@
 import { Manager, Socket } from "socket.io-client";
 import { CookieKeys } from "./constant";
 import { getCookie } from "./cookieManager";
+import { isServer } from "./isServer";
 
 class SocketManager {
   private manager: Manager = undefined;
   socket: Socket = undefined;
 
   constructor() {
-    const socketURL = "http://localhost:8081";
+    const socketURL = process.env.NEXT_PUBLIC_MAIN_URL;
     this.manager = new Manager(socketURL, {
       query: { fleetId: "userId" },
       extraHeaders: {
-        "x-access-token": getCookie(CookieKeys.token),
+        "x-access-token": !isServer()
+          ? localStorage.getItem("token") ?? ""
+          : undefined,
       },
       path: "/ws",
     });

@@ -54,6 +54,7 @@ export default function Login(): ReactElement {
           duration: 3000,
         });
         router.push("/room");
+        localStorage.setItem("token", data.login.user.token.access_token);
       } else if (data?.login?.errors) {
         toast({
           title: "Login Failed!",

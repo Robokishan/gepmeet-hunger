@@ -39,7 +39,7 @@ const didAuthError = ({ error }) => {
 //   };
 
 const client = createClient({
-  url: process.env.NEXT_PUBLIC_MAIN_URL,
+  url: `${process.env.NEXT_PUBLIC_MAIN_URL}/graphql`,
 
   fetchOptions: {
     credentials: "include",
