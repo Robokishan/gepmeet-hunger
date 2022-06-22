@@ -10,8 +10,12 @@ class SocketManager {
   constructor() {
     const socketURL = process.env.NEXT_PUBLIC_MAIN_URL;
     this.manager = new Manager(socketURL, {
-      withCredentials: true,
       query: { fleetId: "userId" },
+      extraHeaders: {
+        "x-access-token": !isServer()
+          ? getCookie(CookieKeys.token) ?? ""
+          : undefined,
+      },
       path: "/ws",
     });
     this.socket = this.manager.socket("/");
