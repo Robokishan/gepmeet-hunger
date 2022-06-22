@@ -18,16 +18,14 @@ export function setCookie(name: string, val: string, expires = 1): void {
 
 export function getCookie(name: string): string {
   if (typeof window !== "undefined") {
-    // const value = "; " + document.cookie;
-    // const parts = value.split("; " + name + "=");
-    // if (parts.length == 2) {
-    //   return parts.pop().split(";").shift();
-    // }
-    return localStorage.getItem("token");
+    const value = "; " + document.cookie;
+    const parts = value.split("; " + name + "=");
+    if (parts.length == 2) {
+      return parts.pop().split(";").shift();
+    }
   }
 }
 
 export function deleteCookie(name: string): void {
-  // document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/";
-  localStorage.clear();
+  document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/";
 }
