@@ -12,6 +12,8 @@ import {
 import { pipe, tap } from "wonka";
 import { socket, SocketContext } from "../../modules/SocketProvider";
 import theme from "../../theme";
+import { CookieKeys } from "../../utils/constant";
+import { getCookie } from "../../utils/cookieManager";
 
 const ignoreThemeUrl = ["/callback", "/admin-login", "/tsplogin", "/add_token"];
 
@@ -43,6 +45,10 @@ const client = createClient({
 
   fetchOptions: {
     credentials: "include",
+
+    headers: {
+      authorization: getCookie(CookieKeys.token),
+    },
   },
   exchanges: [
     authExchange({
