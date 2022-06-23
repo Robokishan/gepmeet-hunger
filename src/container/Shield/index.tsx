@@ -43,12 +43,14 @@ const didAuthError = ({ error }) => {
 const client = createClient({
   url: `${process.env.NEXT_PUBLIC_MAIN_URL}/graphql`,
 
-  fetchOptions: {
-    credentials: "include",
-
-    headers: {
-      authorization: getCookie(CookieKeys.token),
-    },
+  fetchOptions: () => {
+    const token = getCookie(CookieKeys.token);
+    return {
+      credentials: "include",
+      headers: {
+        authorization: token ?? "",
+      },
+    };
   },
   exchanges: [
     authExchange({
