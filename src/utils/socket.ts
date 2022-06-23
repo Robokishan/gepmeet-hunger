@@ -10,6 +10,7 @@ class SocketManager {
   constructor() {
     const socketURL = process.env.NEXT_PUBLIC_MAIN_URL;
     this.manager = new Manager(socketURL, {
+      autoConnect: false,
       query: { fleetId: "userId" },
       path: "/ws",
       extraHeaders: {
@@ -42,6 +43,10 @@ class SocketManager {
     this.socket.disconnect();
   }
   connect(): void {
+    this.manager.opts.extraHeaders = {
+      ...this.manager.opts.extraHeaders,
+      authorization: getCookie(CookieKeys.token),
+    };
     this.socket.connect();
   }
 

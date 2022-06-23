@@ -53,10 +53,12 @@ export default function Room(): ReactElement {
   }, [consumersList]);
 
   const onStopStream = () => {
-    for (const track of stream.getTracks()) {
-      track?.stop();
+    if (stream) {
+      for (const track of stream?.getTracks()) {
+        track?.stop();
+      }
+      setStream(null);
     }
-    setStream(null);
   };
 
   useEffect(() => {
@@ -216,23 +218,30 @@ export default function Room(): ReactElement {
         consumerRequest.push(mediasoupHandshake.consume(consumer));
       }
       _consumers[key] = await Promise.all(consumerRequest);
-      console.log("_consumer", _consumers[key]);
       setConsumersList((prevuid) => {
         let _prevConsumers = prevuid[key] ?? [];
         let newConsumerlist = {
           ...prevuid,
           [key]: [..._prevConsumers, ..._consumers[key]],
         };
-        console.log({ newConsumerlist });
         return newConsumerlist;
       });
     }
     // setConsumersList((prevConsumer) => ({ ...prevConsumer, ..._consumers }));
   };
 
+  const leaveRoom = () => {
+    // dirty hack for room close
+    socket.disconnect();
+    socket.connect();
+    mediasoupHandshake.disconnect();
+    setConsumersList({});
+    onStopStream();
+    router.push("/room");
+  };
+
   const removeConsumers = async (userId: string) => {
     if (userId && consumersList[userId]) {
-      console.log(consumersList[userId]);
       consumersList[userId].forEach((consumer) => consumer.close());
       setConsumersList((prevConsumer) => {
         const _temp_copy = { ...prevConsumer };
@@ -263,32 +272,9 @@ export default function Room(): ReactElement {
         </Text>
         <Box padding="20px">
           <Flex gap="20px">
-            {/* <Button
-              disabled={isConnected !== "Connecting"}
-              onClick={trackproduce}
-              colorScheme="green"
-            >
-              Join Call
-            </Button>
-
-            <Button
-              disabled={isConnected !== "Connecting"}
-              onClick={trackSubcribe}
-              colorScheme="green"
-            >
-              Subscribe
-            </Button> */}
-
             <Button
               disabled={isConnected != "Connected"}
-              onClick={() => {
-                // dirty hack for room close
-                socket.disconnect();
-                socket.connect();
-                setConsumersList({});
-                onStopStream();
-                router.push("/room");
-              }}
+              onClick={leaveRoom}
               colorScheme="red"
             >
               Leave

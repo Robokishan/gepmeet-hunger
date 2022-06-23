@@ -42,7 +42,7 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
           color="white"
           onClick={() => {
             deleteCookie(CookieKeys.token);
-            router.push("/login");
+            router.push("/auth/login");
           }}
           variant="link"
         >

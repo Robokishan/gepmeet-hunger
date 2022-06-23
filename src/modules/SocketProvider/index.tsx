@@ -2,8 +2,7 @@ import React from "react";
 import SocketManager from "../../utils/socket";
 
 const socket = new SocketManager();
-socket.connect();
 
-const SocketContext = React.createContext(null);
+const SocketContext = React.createContext<SocketManager>(null);
 
 export { socket, SocketContext };

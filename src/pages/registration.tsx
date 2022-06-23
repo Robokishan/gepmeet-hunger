@@ -67,7 +67,7 @@ export default function Registration(): ReactElement {
           isClosable: true,
           duration: 3000,
         });
-        router.push("/login");
+        router.push("/auth/login");
       } else if (data?.registration?.errors) {
         toast({
           title: "Login Failed!",

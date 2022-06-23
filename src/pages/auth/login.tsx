@@ -11,11 +11,12 @@ import {
 import { FormikHelpers, useFormik } from "formik";
 import Link from "next/link";
 import Router, { useRouter } from "next/router";
-import React, { ReactElement, useState } from "react";
+import { ReactElement, useContext, useState } from "react";
 import * as Yup from "yup";
-import { LoginInput, useLoginMutation } from "../generated/graphql";
-import { CookieKeys } from "../utils/constant";
-import { getCookie, setCookie } from "../utils/cookieManager";
+import { LoginInput, useLoginMutation } from "../../generated/graphql";
+import { SocketContext } from "../../modules/SocketProvider";
+import { CookieKeys } from "../../utils/constant";
+import { getCookie, setCookie } from "../../utils/cookieManager";
 
 const loginValidation = Yup.object({
   email: Yup.string().email().required(),
@@ -31,6 +32,7 @@ export default function Login(): ReactElement {
   const [, dologin] = useLoginMutation();
   const [show, setShow] = useState(false);
   const handleClick = () => setShow(!show);
+  const socket = useContext(SocketContext);
   const toast = useToast();
 
   const router = useRouter();
@@ -62,6 +64,7 @@ export default function Login(): ReactElement {
           data.login.user.token.access_token,
           Number(data.login.user.token.expires_in)
         );
+        socket.connect();
         router.push("/room");
       } else if (data?.login?.errors) {
         toast({

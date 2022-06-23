@@ -34,7 +34,7 @@ let transport: Transport;
 
 const Index = () => {
   if (getCookie(CookieKeys.token)) Router.push("/room");
-  else Router.push("/login");
+  else Router.push("/auth/login");
   return null;
   // const [roomId, setroomId] = useState("");
   // const [streamError, setStreamError] = useState("");
