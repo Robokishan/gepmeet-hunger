@@ -48,10 +48,6 @@ export default function Room(): ReactElement {
 
   const [stream, setStream] = useState<MediaStream>();
 
-  useEffect(() => {
-    console.log("Consumers", consumersList);
-  }, [consumersList]);
-
   const onStopStream = () => {
     if (stream) {
       for (const track of stream?.getTracks()) {
