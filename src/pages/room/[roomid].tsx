@@ -52,6 +52,11 @@ export default function Room(): ReactElement {
     console.log("Consumers", consumersList);
   }, [consumersList]);
 
+  const onStopStream = () => {
+    stream.getTracks().forEach((track) => track.stop());
+    setStream(null);
+  };
+
   useEffect(() => {
     socket.listen(MediaSoupSocket.roomAssigned, async () => {
       setIsConnected("Connecting");
@@ -176,6 +181,7 @@ export default function Room(): ReactElement {
         onProduce,
         onRecvConnectCallback,
         onSendConnectCallback,
+        Connect: trackproduce,
       });
     } catch (error) {
       console.error(error);
@@ -255,7 +261,7 @@ export default function Room(): ReactElement {
         </Text>
         <Box padding="20px">
           <Flex gap="20px">
-            <Button
+            {/* <Button
               disabled={isConnected !== "Connecting"}
               onClick={trackproduce}
               colorScheme="green"
@@ -269,13 +275,17 @@ export default function Room(): ReactElement {
               colorScheme="green"
             >
               Subscribe
-            </Button>
+            </Button> */}
 
             <Button
               disabled={isConnected != "Connected"}
               onClick={() => {
+                // dirty hack for room close
                 socket.disconnect();
+                socket.connect();
                 setConsumersList({});
+                onStopStream();
+                router.push("/");
               }}
               colorScheme="red"
             >

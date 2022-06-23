@@ -57,6 +57,7 @@ interface StartArgumentType {
   onProduce: onProduce;
   onConnect: onConnect;
   onError: onError;
+  Connect: any;
 }
 
 export async function loadDevice(
@@ -100,6 +101,7 @@ class MediaSoupHandshake {
     onProduce,
     onConnect,
     onError,
+    Connect,
   }: StartArgumentType) {
     await this.createProducerTransport(sendTransMeta);
     await this.createConsumerTransport(recvTransMeta);
@@ -110,6 +112,7 @@ class MediaSoupHandshake {
       onError
     );
     await this.subRecvTransportEv(onRecvConnectCallback, onConnect, onError);
+    await Connect();
   }
 
   createProducerTransport(transportMeta: TransportOptions): Transport {
