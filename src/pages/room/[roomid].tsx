@@ -53,7 +53,9 @@ export default function Room(): ReactElement {
   }, [consumersList]);
 
   const onStopStream = () => {
-    stream.getTracks().forEach((track) => track.stop());
+    for (const track of stream.getTracks()) {
+      track?.stop();
+    }
     setStream(null);
   };
 
@@ -285,7 +287,7 @@ export default function Room(): ReactElement {
                 socket.connect();
                 setConsumersList({});
                 onStopStream();
-                router.push("/");
+                router.push("/room");
               }}
               colorScheme="red"
             >
