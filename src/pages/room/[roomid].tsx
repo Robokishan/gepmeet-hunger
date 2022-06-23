@@ -167,15 +167,19 @@ export default function Room(): ReactElement {
     );
     const sendTransMeta = createProducerTransportResponse as TransportOptions;
     const recvTransMeta = createConsumerTransportResponse as TransportOptions;
-    await mediasoupHandshake.start({
-      sendTransMeta,
-      recvTransMeta,
-      onConnect: onTransportConnect,
-      onError: onTransportError,
-      onProduce,
-      onRecvConnectCallback,
-      onSendConnectCallback,
-    });
+    try {
+      await mediasoupHandshake.start({
+        sendTransMeta,
+        recvTransMeta,
+        onConnect: onTransportConnect,
+        onError: onTransportError,
+        onProduce,
+        onRecvConnectCallback,
+        onSendConnectCallback,
+      });
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const trackproduce = async () => {
