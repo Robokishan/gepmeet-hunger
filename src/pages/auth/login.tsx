@@ -29,7 +29,7 @@ const loginInitials: LoginInput = {
 };
 
 export default function Login(): ReactElement {
-  const [, dologin] = useLoginMutation();
+  const [dologin] = useLoginMutation();
   const [show, setShow] = useState(false);
   const handleClick = () => setShow(!show);
   const socket = useContext(SocketContext);
@@ -50,7 +50,11 @@ export default function Login(): ReactElement {
   ) {
     validateForm(values);
     try {
-      const { data } = await dologin({ options: values });
+      const { data } = await dologin({
+        variables: {
+          options: values,
+        },
+      });
       if (data?.login?.user) {
         toast({
           title: `Login Success`,

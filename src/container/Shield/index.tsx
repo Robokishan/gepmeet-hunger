@@ -1,8 +1,14 @@
+import {
+  ApolloClient,
+  ApolloProvider,
+  createHttpLink,
+  InMemoryCache,
+} from "@apollo/client";
+import { setContext } from "@apollo/client/link/context";
+import { onError } from "@apollo/client/link/error";
 import { ChakraProvider } from "@chakra-ui/react";
-import { authExchange } from "@urql/exchange-auth";
-import { useRouter } from "next/router";
+import Router, { useRouter } from "next/router";
 import React, { ReactElement, useEffect, useState } from "react";
-import { createClient, fetchExchange, makeOperation, Provider } from "urql";
 import theme from "../../theme";
 import { CookieKeys } from "../../utils/constant";
 import { getCookie } from "../../utils/cookieManager";
@@ -14,42 +20,36 @@ export interface ShieldProps {
   children?: JSX.Element | React.ReactNode;
 }
 
-const didAuthError = ({ error }) => {
-  console.log(error);
-  return error.graphQLErrors.some((e) => e.response.status === 401);
-};
+const httpLink = createHttpLink({
+  uri: `${process.env.NEXT_PUBLIC_MAIN_URL}/graphql`,
+});
 
-const client = createClient({
-  url: `${process.env.NEXT_PUBLIC_MAIN_URL}/graphql`,
+const authLink = setContext((_, { headers }) => {
+  // get the authentication token from local storage if it exists
+  const token = getCookie(CookieKeys.token);
+  // return the headers to the context so httpLink can read them
+  return {
+    headers: {
+      ...headers,
+      authorization: token ?? "",
+    },
+  };
+});
 
-  fetchOptions: () => {
-    const token = getCookie(CookieKeys.token);
-    return {
-      credentials: "include",
-      headers: {
-        authorization: token ?? "",
-      },
-    };
-  },
-  exchanges: [
-    authExchange({
-      addAuthToOperation: ({ authState, operation }) => {
-        if (!authState || !(authState as any).token) {
-          return operation;
-        }
-        // if authState has the error
-        // return an empty operation
-        if (authState && (authState as any).authError) {
-          return makeOperation("teardown", operation);
-        }
-      },
-      getAuth: async ({ authState, mutate }) => {
-        return null;
-      },
-      didAuthError,
-    }),
-    fetchExchange,
-  ],
+// Log any GraphQL errors or network error that occurred
+const errorLink = onError(({ graphQLErrors, networkError }) => {
+  if (graphQLErrors) Router.push("/auth/login");
+  // graphQLErrors.forEach(({ message, locations, path }) =>
+  //   console.log(
+  //     `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
+  //   )
+  // );
+  if (networkError) console.error(`[Network error]: ${networkError}`);
+});
+
+const client = new ApolloClient({
+  link: errorLink.concat(authLink).concat(httpLink),
+  cache: new InMemoryCache(),
 });
 
 export default function Shield({ children }: ShieldProps): ReactElement {
@@ -66,11 +66,11 @@ export default function Shield({ children }: ShieldProps): ReactElement {
     <>
       {!isLoading && (
         <ChakraProvider resetCSS theme={theme}>
-          <Provider value={client}>
+          <ApolloProvider client={client}>
             <SocketContainer>
               <React.Fragment>{children}</React.Fragment>
             </SocketContainer>
-          </Provider>
+          </ApolloProvider>
         </ChakraProvider>
       )}
     </>

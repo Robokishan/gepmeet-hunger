@@ -10,7 +10,7 @@ interface NavBarProps {}
 
 export const NavBar: React.FC<NavBarProps> = ({}) => {
   const router = useRouter();
-  const [{ data, fetching, error }] = useGetmeQuery();
+  const { data, loading: fetching } = useGetmeQuery();
 
   let body = null;
 

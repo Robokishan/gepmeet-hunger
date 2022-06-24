@@ -9,18 +9,24 @@ import {
 } from "../../generated/graphql";
 
 export default function RoomList(): ReactElement {
-  const [{ data, error, fetching }, refetchRoomList] =
-    useGetConversationsQuery();
-  const [, mutatedeleteConv] = useDeleteConversationMutation();
+  const {
+    data,
+    error,
+    loading,
+    refetch: refetchRoomList,
+  } = useGetConversationsQuery();
+  const [mutatedeleteConv] = useDeleteConversationMutation();
 
   const deleteConversation = async (roomid: string) => {
     await mutatedeleteConv({
-      deleteConversationId: roomid,
+      variables: {
+        deleteConversationId: roomid,
+      },
     });
     refetchRoomList();
   };
 
-  if (fetching) return <div>Loading</div>;
+  if (loading) return <div>Loading</div>;
   if (error) return <div>error: {JSON.stringify(error)}</div>;
   if (data?.GetConversations)
     return (

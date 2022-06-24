@@ -94,8 +94,12 @@ export default function Room(): ReactElement {
     joinRoom();
   }, []);
 
-  const [{ data, fetching, error }] = useGetConversationQuery({
-    pause: !router.query.roomid,
+  const {
+    data,
+    loading: fetching,
+    error,
+  } = useGetConversationQuery({
+    skip: !router.query.roomid,
     variables: {
       conversationid: router.query.roomid as string,
     },
