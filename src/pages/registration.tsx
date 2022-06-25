@@ -35,7 +35,7 @@ const registerInitials: RegistrationInput = {
 };
 
 export default function Registration(): ReactElement {
-  const [, register] = useRegistrationsMutation();
+  const [register] = useRegistrationsMutation();
   const [show, setShow] = useState(false);
   const handleClick = () => setShow(!show);
   const toast = useToast();
@@ -57,7 +57,7 @@ export default function Registration(): ReactElement {
     validateForm(values);
     try {
       const { data } = await register({
-        options: values,
+        variables: { options: values },
       });
       if (data?.registration?.user?.name) {
         toast({

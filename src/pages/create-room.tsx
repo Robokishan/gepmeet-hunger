@@ -9,7 +9,7 @@ import { useCreateConversationMutation } from "../generated/graphql";
 interface Props {}
 
 export default function CreateRoom({}: Props): ReactElement {
-  const [, createRoom] = useCreateConversationMutation();
+  const [createRoom] = useCreateConversationMutation();
 
   return (
     <Layout variant="small">
@@ -17,8 +17,8 @@ export default function CreateRoom({}: Props): ReactElement {
         initialValues={{ title: "", description: "" }}
         onSubmit={async (values) => {
           console.log(values);
-          const { error } = await createRoom({
-            options: values,
+          const { errors: error } = await createRoom({
+            variables: { options: values },
           });
           if (!error) {
             router.push("/");
