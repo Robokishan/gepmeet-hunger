@@ -91,7 +91,7 @@ export default function Room(): ReactElement {
   }, [consumersList]);
 
   useEffect(() => {
-    joinRoom();
+    // joinRoom();
   }, []);
 
   const {
@@ -234,6 +234,7 @@ export default function Room(): ReactElement {
     // dirty hack for room close
     socket.disconnect();
     socket.connect();
+    socket.request("leaveroom");
     mediasoupHandshake.disconnect();
     setConsumersList({});
     onStopStream();
@@ -280,9 +281,9 @@ export default function Room(): ReactElement {
               Leave
             </Button>
 
-            <Link style={{ textDecoration: "none" }} href="/room">
+            {/* <Link style={{ textDecoration: "none" }} href="/room">
               <Button colorScheme="orange">Rooms List</Button>
-            </Link>
+            </Link> */}
           </Flex>
           <Flex padding="20px">
             <RoomCard

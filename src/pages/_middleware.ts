@@ -12,6 +12,7 @@ export async function middleware(req: NextRequest) {
     !cookies.token &&
     // !url.includes("token") &&
     !url.includes("/auth") &&
+    !url.includes("/registration") &&
     !url.includes(".ico") &&
     !url.includes(".png")
   ) {

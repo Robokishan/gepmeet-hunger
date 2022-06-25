@@ -89,12 +89,7 @@ export default function Registration(): ReactElement {
         <Flex flexDirection="column" gap="20px">
           <Flex justifyContent="center">
             <Text fontSize="3xl" textAlign="center">
-              Registration |
-            </Text>
-            <Text whiteSpace="pre" fontSize="3xl">
-              <Link color="teal" href="/login">
-                Login
-              </Link>
+              Registration
             </Text>
           </Flex>
           <Input
@@ -163,6 +158,11 @@ export default function Registration(): ReactElement {
           >
             Register
           </Button>
+          <Text as="u" whiteSpace="pre" fontSize="small">
+            <Link color="teal" href="/auth/login">
+              If you are already registered. Please Login here
+            </Link>
+          </Text>
         </Flex>
       </form>
     </Box>
