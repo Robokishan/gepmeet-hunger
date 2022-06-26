@@ -1,8 +1,8 @@
-import { Box, Button, Flex, Text } from "@chakra-ui/react";
+import { Box, Button, Flex, Text, toast, useToast } from "@chakra-ui/react";
 import jwt_decode from "jwt-decode";
 import { Device } from "mediasoup-client";
 import { Consumer, ConsumerOptions } from "mediasoup-client/lib/Consumer";
-import { TransportOptions } from "mediasoup-client/lib/Transport";
+import { Transport, TransportOptions } from "mediasoup-client/lib/Transport";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { ReactElement, useContext, useEffect, useState } from "react";
@@ -36,6 +36,7 @@ interface CreateConsumerArg {
 let mediasoupHandshake: MediaSoupHandshake = null;
 
 export default function Room(): ReactElement {
+  const toast = useToast();
   const router = useRouter();
   const socket = useContext<SocketManager>(SocketContext);
   const [consumersList, setConsumersList] = useState<
@@ -80,18 +81,40 @@ export default function Room(): ReactElement {
           rtpCapabilities: mediasoupHandshake.getrtpCapabilities(),
         }
       )) as any;
+
       addConsumers(response);
+    });
+    socket.listen("notifyuserentered", async (data: any) => {
+      toast({
+        position: "top-right",
+        title: `New User Joined`,
+        description: data?.name,
+        status: "success",
+        isClosable: true,
+        duration: 3000,
+      });
     });
   }, []);
 
   useEffect(() => {
     socket.listen("userleft", (data: any) => {
+      toast({
+        position: "top-right",
+        title: "User Left",
+        description: data?.name,
+        status: "warning",
+        isClosable: true,
+        duration: 3000,
+      });
       removeConsumers(data.userId);
     });
+    return () => {
+      socket.socket.off("userleft");
+    };
   }, [consumersList]);
 
   useEffect(() => {
-    // joinRoom();
+    joinRoom();
   }, []);
 
   const {
@@ -227,14 +250,11 @@ export default function Room(): ReactElement {
         return newConsumerlist;
       });
     }
-    // setConsumersList((prevConsumer) => ({ ...prevConsumer, ..._consumers }));
   };
 
   const leaveRoom = () => {
-    // dirty hack for room close
-    socket.disconnect();
-    socket.connect();
     socket.request("leaveroom");
+    socket.socket.removeAllListeners();
     mediasoupHandshake.disconnect();
     setConsumersList({});
     onStopStream();
