@@ -92,16 +92,13 @@ export default function Login(): ReactElement {
         <Flex flexDirection="column" gap="20px">
           <Flex justifyContent="center">
             <Text fontSize="3xl" textAlign="center">
-              Login |
-            </Text>
-            <Text whiteSpace="pre" fontSize="3xl">
-              <Link color="teal" href="/registration">
-                Registration
-              </Link>
+              Login
             </Text>
           </Flex>
           <Input
             name="email"
+            placeholder="Please enter your email"
+            autoComplete="email"
             onChange={loginformik.handleChange}
             onBlur={loginformik.handleBlur}
             type="email"
@@ -134,6 +131,11 @@ export default function Login(): ReactElement {
           >
             Login
           </Button>
+          <Text as="u" whiteSpace="pre" fontSize="small">
+            <Link color="teal" href="/registration">
+              Not Registered? Register here
+            </Link>
+          </Text>
         </Flex>
       </form>
     </Box>

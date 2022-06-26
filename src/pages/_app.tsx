@@ -4,10 +4,10 @@ import Shield from "../container/Shield";
 
 function MyApp({ Component, pageProps }: AppProps) {
   // enable logger for mediasoup
-  useEffect(() => {
-    // localStorage.setItem("debug", "mediasoup-client:*");
-    localStorage.setItem("debug", "");
-  }, []);
+  // useEffect(() => {
+  //   // localStorage.setItem("debug", "mediasoup-client:*");
+  //   // localStorage.setItem("debug", "");
+  // }, []);
   return (
     <Shield>
       <Component {...pageProps} />
