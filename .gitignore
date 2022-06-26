@@ -6,3 +6,9 @@ gepmeet/firebase-debug.log
 gepmeet/.firebase
 gepmeet/.env
 gepmeet/.vscode/settings.json
+.env
+node_modules
+.fireb*
+.next/
+.vercel/
+firebase.json
