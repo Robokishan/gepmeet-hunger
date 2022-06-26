@@ -1,16 +1,18 @@
-import React from "react";
+import React, { useContext } from "react";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useGetmeQuery } from "../generated/graphql";
 import { Flex, Button, Box, Heading, Link } from "@chakra-ui/react";
 import { deleteCookie } from "../utils/cookieManager";
 import { CookieKeys } from "../utils/constant";
+import { SocketContext } from "../modules/SocketProvider";
 
 interface NavBarProps {}
 
 export const NavBar: React.FC<NavBarProps> = ({}) => {
   const router = useRouter();
   const { data, loading: fetching } = useGetmeQuery();
+  const socket = useContext(SocketContext);
 
   let body = null;
 
@@ -41,6 +43,7 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
         <Button
           color="white"
           onClick={() => {
+            socket.disconnect();
             deleteCookie(CookieKeys.token);
             router.push("/auth/login");
           }}
