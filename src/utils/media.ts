@@ -1,3 +1,5 @@
+import { LocalStorageKey } from "./constant";
+
 const getUserMedia = async () => {
   // if (!device.canProduce("video")) {
   //   console.error("cannot produce video");
@@ -7,8 +9,12 @@ const getUserMedia = async () => {
   let stream;
   try {
     stream = await navigator.mediaDevices.getUserMedia({
-      video: true,
-      audio: true,
+      video: {
+        deviceId: localStorage.getItem(LocalStorageKey.vidId),
+      },
+      audio: {
+        deviceId: localStorage.getItem(LocalStorageKey.micId),
+      },
     });
   } catch (err) {
     console.error("getUserMedia() failed:", err.message);
@@ -17,4 +23,10 @@ const getUserMedia = async () => {
   return stream;
 };
 
-export { getUserMedia };
+const getSavedDevices = async (): Promise<{ micId: string; vidId: string }> => {
+  const micId = localStorage.getItem(LocalStorageKey.micId);
+  const vidId = localStorage.getItem(LocalStorageKey.vidId);
+  return { micId, vidId };
+};
+
+export { getUserMedia, getSavedDevices };
