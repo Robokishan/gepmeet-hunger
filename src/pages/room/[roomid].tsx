@@ -1,11 +1,11 @@
-import { Box, Button, Flex, Text, toast, useToast } from "@chakra-ui/react";
+import { Box, Button, Flex, Text, useToast } from "@chakra-ui/react";
 import jwt_decode from "jwt-decode";
 import { Device } from "mediasoup-client";
 import { Consumer, ConsumerOptions } from "mediasoup-client/lib/Consumer";
-import { Transport, TransportOptions } from "mediasoup-client/lib/Transport";
-import Link from "next/link";
+import { TransportOptions } from "mediasoup-client/lib/Transport";
 import { useRouter } from "next/router";
-import { ReactElement, useContext, useEffect, useState } from "react";
+import { ReactElement, useContext, useEffect, useMemo, useState } from "react";
+import Draggable from "../../components/Draggable";
 import { Layout } from "../../components/Layout";
 import MediaTrack from "../../components/MediaTrack";
 import { RoomCard } from "../../components/RoomCard";
@@ -20,6 +20,7 @@ import {
   MediaSoupSocket,
 } from "../../utils/mediasoup";
 import SocketManager from "../../utils/socket";
+import { calcNewVolume } from "../../utils/volume/spatialvolume";
 
 let device: Device;
 
@@ -33,6 +34,11 @@ interface CreateConsumerArg {
   consumerParameters: Record<string, Array<ConsumerOptions>>;
 }
 
+interface Position {
+  x: number;
+  y: number;
+}
+
 let mediasoupHandshake: MediaSoupHandshake = null;
 
 export default function Room(): ReactElement {
@@ -43,11 +49,20 @@ export default function Room(): ReactElement {
     Record<string, Array<Consumer>>
   >({});
 
+  const [userVolumes, setUserVolumes] = useState<Record<string, number>>({});
+
+  const [userpositions, setUserPositions] = useState<Record<string, Position>>(
+    {}
+  );
+
+  const [myPosition, setMyPosition] = useState<Position>({ x: 0, y: 0 });
+
   const [isConnected, setIsConnected] = useState<
     "Disconnect" | "Connecting" | "Connected"
   >("Disconnect");
 
   const [stream, setStream] = useState<MediaStream>();
+  const [userStream, setUserStream] = useState<Record<string, MediaStream>>({});
 
   const onStopStream = () => {
     if (stream) {
@@ -94,7 +109,37 @@ export default function Room(): ReactElement {
         duration: 3000,
       });
     });
+    socket.listen("drag", (data: any) => {
+      setUserPositions((prev) => {
+        return {
+          ...prev,
+          [data.userId]: {
+            x: data.position.x,
+            y: data.position.y,
+          },
+        };
+      });
+      const newVol = calcNewVolume(
+        {
+          x: data.position.x,
+          y: data.position.y,
+        },
+        myPosition,
+        10,
+        1000
+      );
+      setUserVolumes((prev) => {
+        return {
+          ...prev,
+          [data.userId]: newVol,
+        };
+      });
+    });
   }, []);
+
+  // useEffect(() => {
+  //   console.log(userVolumes);
+  // }, [userVolumes]);
 
   useEffect(() => {
     socket.listen("userleft", (data: any) => {
@@ -108,6 +153,7 @@ export default function Room(): ReactElement {
       });
       removeConsumers(data.userId);
     });
+
     return () => {
       socket.socket.off("userleft");
     };
@@ -128,10 +174,14 @@ export default function Room(): ReactElement {
     },
   });
 
+  const userId = useMemo(() => {
+    return (jwt_decode(getCookie(CookieKeys.token)) as any).userId;
+  }, []);
+
   const joinRoom = async () => {
     const data = await socket.request(MediaSoupSocket.startNegotiation, {
       roomId: router.query.roomid as string,
-      userId: (jwt_decode(getCookie(CookieKeys.token)) as any).userId,
+      userId,
     });
     // tood: check if room allocated if not then start again
   };
@@ -249,6 +299,17 @@ export default function Room(): ReactElement {
         };
         return newConsumerlist;
       });
+
+      _consumers[key].map((consumer) =>
+        setUserStream((prev) => {
+          const prevStream: MediaStream = prev[key] ?? new MediaStream();
+          prevStream.addTrack(consumer.track);
+          return {
+            ...prev,
+            [key]: prevStream,
+          };
+        })
+      );
     }
   };
 
@@ -272,73 +333,106 @@ export default function Room(): ReactElement {
     }
   };
 
-  if (fetching) return <div>Loading</div>;
-  if (data)
-    return (
-      <Layout>
-        <Text
-          textAlign="center"
-          fontSize="3xl"
-          color={
-            isConnected == "Disconnect"
-              ? "red"
-              : isConnected == "Connecting"
-              ? "orange"
-              : isConnected == "Connected"
-              ? "green"
-              : "black"
-          }
-        >
-          {isConnected}
-        </Text>
-        <Box padding="20px">
-          <Flex gap="20px">
-            <Button
-              disabled={isConnected != "Connected"}
-              onClick={leaveRoom}
-              colorScheme="red"
-            >
-              Leave
-            </Button>
-            {<Button colorScheme="blue">Share</Button>}
-
-            {/* <Link style={{ textDecoration: "none" }} href="/room">
-              <Button colorScheme="orange">Rooms List</Button>
-            </Link> */}
-          </Flex>
-          <Flex padding="20px">
+  return (
+    <Layout>
+      <Text
+        textAlign="center"
+        fontSize="3xl"
+        color={
+          isConnected == "Disconnect"
+            ? "red"
+            : isConnected == "Connecting"
+            ? "orange"
+            : isConnected == "Connected"
+            ? "green"
+            : "black"
+        }
+      >
+        {isConnected}
+      </Text>
+      <Box padding="20px">
+        <Flex gap="20px">
+          <Button
+            disabled={isConnected != "Connected"}
+            onClick={leaveRoom}
+            colorScheme="red"
+          >
+            Leave
+          </Button>
+          {<Button colorScheme="blue">Share</Button>}
+        </Flex>
+        <Flex padding="20px">
+          {data && (
             <RoomCard
               id={data.GetConversation.id}
               title={data.GetConversation.title}
               description={data.GetConversation.description}
               members={data.GetConversation.members}
             />
-          </Flex>
-          <Flex gap="20px" flexWrap="wrap">
-            {stream && (
-              <MediaTrack
-                isLocal={true}
-                videoSrc={stream}
-                id={(jwt_decode(getCookie(CookieKeys.token)) as any).userId}
-              />
-            )}
+          )}
+        </Flex>
+        <Flex gap="20px" flexWrap="wrap">
+          <div
+            className="canvas"
+            id="canvas"
+            style={{
+              margin: "10px",
+              textAlign: "center",
+              marginRight: "10px",
+              marginBottom: "10px",
+              border: "cyan",
+              borderStyle: "dotted",
+              backgroundRepeat: "no-repeat",
+              backgroundSize: "contain",
+              // backgroundImage: `url(background_home.jpg)`,
+              width: 2160,
+              height: 2160,
+              position: "absolute",
+            }}
+          >
             {Object.keys(consumersList)?.map((uid) => {
-              const consumer = consumersList[uid];
-              const stream = new MediaStream();
-              consumer.forEach((_con) => stream.addTrack(_con.track));
               return (
-                <MediaTrack
-                  id={uid}
-                  videoSrc={stream}
+                <Draggable
+                  position={userpositions[uid]}
+                  key={`${uid}-move`}
                   isLocal={false}
-                  key={uid}
-                />
+                >
+                  {userStream[uid] && (
+                    <MediaTrack
+                      volume={userVolumes?.[uid] ?? 1}
+                      id={uid}
+                      videoSrc={userStream[uid]}
+                      isLocal={false}
+                      key={uid}
+                    />
+                  )}
+                </Draggable>
               );
             })}
-          </Flex>
-        </Box>
-      </Layout>
-    );
-  if (error) return <div>error: {JSON.stringify(error)}</div>;
-  return <>Loading</>;
+            {stream && (
+              <Draggable
+                handleDrag={(e, d) => {
+                  setMyPosition({ x: d.x, y: d.y });
+                  socket.socket.emit("drag", {
+                    userId,
+                    position: {
+                      x: d.x,
+                      y: d.y,
+                    },
+                  });
+                }}
+                isLocal={true}
+              >
+                <MediaTrack
+                  isLocal={true}
+                  videoSrc={stream}
+                  id={(jwt_decode(getCookie(CookieKeys.token)) as any).userId}
+                />
+              </Draggable>
+            )}
+          </div>
+        </Flex>
+      </Box>
+    </Layout>
+  );
 }

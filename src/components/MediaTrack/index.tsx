@@ -6,38 +6,35 @@ interface Props {
   size?: string;
   isLocal?: boolean;
   videoSrc: MediaStream;
+  volume?: number;
 }
 
-export default function MediaTrack({
+function MediaTrack({
   videoSrc,
   size = "150px",
   id,
   isLocal = false,
+  volume = 1,
 }: Props): ReactElement {
   const refVideo = useRef<HTMLVideoElement>(null);
-
   const [loading, setLoading] = useState(false);
-
-  const onBuffer = () => {
-    setLoading(true);
-    console.log("buffering");
-  };
-  const onBufferEnd = () => {
-    setLoading(false);
-    console.log("buffer ended");
-  };
+  const onBuffer = () => setLoading(true);
+  const onBufferEnd = () => setLoading(false);
 
   useEffect(() => {
     if (!refVideo.current) return;
     refVideo.current.srcObject = videoSrc;
-
     refVideo.current.onloadstart = onBuffer;
-
     refVideo.current.onloadedmetadata = onBufferEnd;
   }, [videoSrc]);
 
+  // useEffect(() => {
+  //   if (!refVideo.current) return;
+  //   refVideo.current.volume = volume;
+  // }, [volume]);
+
   return (
-    <Box position="relative">
+    <Box zIndex={isLocal ? "10" : "0"} position="relative">
       <video
         id={`${id}_video`}
         className="circle-vid"
@@ -88,3 +85,4 @@ export default function MediaTrack({
     </Box>
   );
 }
+export default React.memo(MediaTrack);

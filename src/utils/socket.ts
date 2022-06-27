@@ -11,7 +11,7 @@ class SocketManager {
     const socketURL = process.env.NEXT_PUBLIC_MAIN_URL;
     this.manager = new Manager(socketURL, {
       autoConnect: false,
-      query: { fleetId: "userId" },
+      // query: { fleetId: "userId" },
       path: "/ws",
       extraHeaders: {
         authorization: getCookie(CookieKeys.token),
