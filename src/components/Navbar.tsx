@@ -43,6 +43,7 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
         <Button
           color="white"
           onClick={() => {
+            socket.request("leaveroom");
             socket.disconnect();
             deleteCookie(CookieKeys.token);
             router.push("/auth/login");

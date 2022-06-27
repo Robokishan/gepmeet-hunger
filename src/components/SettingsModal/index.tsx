@@ -31,6 +31,7 @@ export default function SettingsModal({
   );
 
   const selectVidID = (vidID: string) => {
+    console.log(vidID);
     setVidID(vidID);
   };
 
@@ -49,6 +50,7 @@ export default function SettingsModal({
   }, []);
 
   async function getCam() {
+    await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
     const devices = await navigator.mediaDevices.enumerateDevices();
     for (const device of devices) {
       if (device.kind === "videoinput") {
@@ -72,7 +74,11 @@ export default function SettingsModal({
         <ModalHeader>Device settings</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <Select value={vidID} onChange={(e) => selectVidID(e.target.value)}>
+          <Select
+            placeholder="Select Video Device"
+            value={vidID}
+            onChange={(e) => selectVidID(e.target.value)}
+          >
             {vidDevices.map((vidDevice) => {
               return (
                 <option key={vidDevice.deviceId} value={vidDevice.deviceId}>

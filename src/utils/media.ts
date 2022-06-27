@@ -8,14 +8,23 @@ const getUserMedia = async () => {
 
   let stream;
   try {
-    stream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        deviceId: localStorage.getItem(LocalStorageKey.vidId),
-      },
-      audio: {
-        deviceId: localStorage.getItem(LocalStorageKey.micId),
-      },
-    });
+    let options: MediaStreamConstraints = {
+      video: true,
+      audio: true,
+    };
+    const { vidId, micId } = await getSavedDevices();
+    if (vidId && micId) {
+      options = {
+        video: {
+          deviceId: localStorage.getItem(LocalStorageKey.vidId),
+        },
+        audio: {
+          deviceId: localStorage.getItem(LocalStorageKey.micId),
+        },
+      };
+    }
+
+    stream = await navigator.mediaDevices.getUserMedia(options);
   } catch (err) {
     console.error("getUserMedia() failed:", err.message);
     throw err;
@@ -24,8 +33,14 @@ const getUserMedia = async () => {
 };
 
 const getSavedDevices = async (): Promise<{ micId: string; vidId: string }> => {
-  const micId = localStorage.getItem(LocalStorageKey.micId);
-  const vidId = localStorage.getItem(LocalStorageKey.vidId);
+  let micId = localStorage.getItem(LocalStorageKey.micId);
+  let vidId = localStorage.getItem(LocalStorageKey.vidId);
+  if (micId == "null" || micId == "undefined") {
+    micId = null;
+  }
+  if (vidId == "null" || vidId == "undefined") {
+    vidId = null;
+  }
   return { micId, vidId };
 };
 

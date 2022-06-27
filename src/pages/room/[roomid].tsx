@@ -300,6 +300,7 @@ export default function Room(): ReactElement {
             >
               Leave
             </Button>
+            {<Button colorScheme="blue">Share</Button>}
 
             {/* <Link style={{ textDecoration: "none" }} href="/room">
               <Button colorScheme="orange">Rooms List</Button>
