@@ -1,4 +1,4 @@
-// import { xy } from "../../types/canvasFB";
+import { xy } from "./spatialvolume";
 
 export function findGetParameter(parameterName: string) {
   var result: undefined | string,
