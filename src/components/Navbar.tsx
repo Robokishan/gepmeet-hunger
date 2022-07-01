@@ -1,7 +1,11 @@
 import React, { useContext } from "react";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
-import { useGetmeQuery } from "../generated/graphql";
+import {
+  useGetmeQuery,
+  useLoginMutation,
+  useLogoutMutation,
+} from "../generated/graphql";
 import { Flex, Button, Box, Heading, Link } from "@chakra-ui/react";
 import { deleteCookie } from "../utils/cookieManager";
 import { CookieKeys } from "../utils/constant";
@@ -12,6 +16,7 @@ interface NavBarProps {}
 export const NavBar: React.FC<NavBarProps> = ({}) => {
   const router = useRouter();
   const { data, loading: fetching } = useGetmeQuery();
+  const [logout] = useLogoutMutation();
   const socket = useContext(SocketContext);
 
   let body = null;
@@ -46,6 +51,7 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
             socket.request("leaveroom");
             socket.disconnect();
             deleteCookie(CookieKeys.token);
+            logout();
             router.push("/auth/login");
           }}
           variant="link"

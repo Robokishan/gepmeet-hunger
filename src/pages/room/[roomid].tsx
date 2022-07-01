@@ -109,6 +109,13 @@ export default function Room(): ReactElement {
         duration: 3000,
       });
     });
+    socket.socket.on("disconnect", () => {
+      if (socket.isConnected()) socket.request("leaveroom");
+      socket.socket.removeAllListeners();
+      mediasoupHandshake.disconnect();
+      onStopStream();
+    });
+
     socket.listen("drag", (data: any) => {
       setUserPositions((prev) => {
         return {
@@ -314,7 +321,7 @@ export default function Room(): ReactElement {
   };
 
   const leaveRoom = () => {
-    socket.request("leaveroom");
+    if (socket.isConnected()) socket.request("leaveroom");
     socket.socket.removeAllListeners();
     mediasoupHandshake.disconnect();
     setConsumersList({});

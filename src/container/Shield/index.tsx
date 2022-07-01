@@ -11,7 +11,7 @@ import Router, { useRouter } from "next/router";
 import React, { ReactElement, useEffect, useState } from "react";
 import theme from "../../theme";
 import { CookieKeys } from "../../utils/constant";
-import { getCookie } from "../../utils/cookieManager";
+import { deleteCookie, getCookie } from "../../utils/cookieManager";
 import SocketContainer from "../SocketContainer";
 
 const ignoreThemeUrl = ["/callback", "/admin-login", "/tsplogin", "/add_token"];
@@ -38,7 +38,10 @@ const authLink = setContext((_, { headers }) => {
 
 // Log any GraphQL errors or network error that occurred
 const errorLink = onError(({ graphQLErrors, networkError }) => {
-  if (graphQLErrors) Router.push("/auth/login");
+  if (graphQLErrors) {
+    Router.push("/auth/login");
+    deleteCookie(CookieKeys.token);
+  }
   // graphQLErrors.forEach(({ message, locations, path }) =>
   //   console.log(
   //     `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
