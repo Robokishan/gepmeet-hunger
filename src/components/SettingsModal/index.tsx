@@ -50,16 +50,20 @@ export default function SettingsModal({
   }, []);
 
   async function getCam() {
-    await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-    const devices = await navigator.mediaDevices.enumerateDevices();
-    for (const device of devices) {
-      if (device.kind === "videoinput") {
-        setVidDevices((vidDevices) => [...vidDevices, device]);
-      }
-      if (device.kind === "audioinput") {
-        setAudDevices((audDevices) => [...audDevices, device]);
-      }
-    }
+    navigator.mediaDevices
+      .getUserMedia({ video: true, audio: true })
+      .then(async (stream) => {
+        stream.getTracks().forEach((x) => x.stop());
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        for (const device of devices) {
+          if (device.kind === "videoinput") {
+            setVidDevices((vidDevices) => [...vidDevices, device]);
+          }
+          if (device.kind === "audioinput") {
+            setAudDevices((audDevices) => [...audDevices, device]);
+          }
+        }
+      });
   }
 
   return (
