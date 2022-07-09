@@ -43,7 +43,8 @@ function MediaTrack({
         muted={isLocal}
         ref={refVideo}
         style={{
-          border: "2px solid #ff000080",
+          cursor: `${!isLocal && "not-allowed"}`,
+          border: `2px solid ${isLocal ? "#00ffaecd" : "#ff000080"}`,
           borderRadius: "50%",
           position: "relative",
           objectFit: "cover",
