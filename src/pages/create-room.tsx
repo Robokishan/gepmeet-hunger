@@ -16,7 +16,6 @@ export default function CreateRoom({}: Props): ReactElement {
       <Formik
         initialValues={{ title: "", description: "" }}
         onSubmit={async (values) => {
-          console.log(values);
           const { errors: error } = await createRoom({
             variables: { options: values },
           });

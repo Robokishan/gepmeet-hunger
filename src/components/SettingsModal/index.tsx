@@ -31,7 +31,6 @@ export default function SettingsModal({
   );
 
   const selectVidID = (vidID: string) => {
-    console.log(vidID);
     setVidID(vidID);
   };
 

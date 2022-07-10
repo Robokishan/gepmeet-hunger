@@ -61,15 +61,15 @@ export default function Room(): ReactElement {
     "Disconnect" | "Connecting" | "Connected"
   >("Disconnect");
 
-  const [stream, setStream] = useState<MediaStream>();
+  const [localStream, setLocalStream] = useState<MediaStream>();
   const [userStream, setUserStream] = useState<Record<string, MediaStream>>({});
 
   const onStopStream = () => {
-    if (stream) {
-      for (const track of stream?.getTracks()) {
+    if (localStream) {
+      for (const track of localStream?.getTracks()) {
         track?.stop();
       }
-      setStream(null);
+      setLocalStream(null);
     }
   };
 
@@ -275,7 +275,7 @@ export default function Room(): ReactElement {
   const trackproduce = async () => {
     const stream = await getUserMedia();
     await mediasoupHandshake.produce(stream);
-    setStream(stream);
+    setLocalStream(stream);
     setIsConnected("Connected");
     trackSubcribe();
   };
@@ -325,6 +325,7 @@ export default function Room(): ReactElement {
     socket.socket.removeAllListeners();
     mediasoupHandshake.disconnect();
     setConsumersList({});
+    setUserStream({});
     onStopStream();
     router.push("/room");
   };
@@ -332,6 +333,11 @@ export default function Room(): ReactElement {
   const removeConsumers = async (userId: string) => {
     if (userId && consumersList[userId]) {
       consumersList[userId].forEach((consumer) => consumer.close());
+      setUserStream((prev) => {
+        const _temp_copy = { ...prev };
+        delete _temp_copy[userId];
+        return _temp_copy;
+      });
       setConsumersList((prevConsumer) => {
         const _temp_copy = { ...prevConsumer };
         delete _temp_copy[userId];
@@ -416,7 +422,7 @@ export default function Room(): ReactElement {
                 </Draggable>
               );
             })}
-            {stream && (
+            {localStream && (
               <Draggable
                 handleDrag={(e, d) => {
                   setMyPosition({ x: d.x, y: d.y });
@@ -432,7 +438,7 @@ export default function Room(): ReactElement {
               >
                 <MediaTrack
                   isLocal={true}
-                  videoSrc={stream}
+                  videoSrc={localStream}
                   id={(jwt_decode(getCookie(CookieKeys.token)) as any).userId}
                 />
               </Draggable>
