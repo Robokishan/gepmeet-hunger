@@ -9,9 +9,16 @@ interface Props {
     x: number;
     y: number;
   };
+  size?: number;
 }
 
-const Draggable = ({ isLocal, handleDrag, position, children }: Props) => {
+const Draggable = ({
+  isLocal,
+  handleDrag,
+  size = 150,
+  position,
+  children,
+}: Props) => {
   return (
     <Rnd
       onDrag={handleDrag}
@@ -20,7 +27,7 @@ const Draggable = ({ isLocal, handleDrag, position, children }: Props) => {
       enableResizing={false}
       // scale={zoom}
       position={position && { x: position.x, y: position.y }}
-      size={{ width: 150, height: 150 }}
+      size={{ width: size, height: size }}
       className="box interactive"
       bounds="#canvas"
       style={{

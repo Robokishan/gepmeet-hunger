@@ -16,7 +16,9 @@ export const RoomCard = ({
   members,
   onDelete,
 }: RoomCardProps): ReactElement => (
-  <Box background="gray.100" borderRadius="20px" padding="20px">
+  <Box cursor="pointer"  _hover={{
+    background: "gray.200",
+  }} background="gray.100" borderRadius="20px" padding="20px">
     {/* <Text>id: {id}</Text> */}
     <Text>Title: {title}</Text>
     <Text>Description: {description}</Text>

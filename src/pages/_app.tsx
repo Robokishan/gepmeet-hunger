@@ -1,6 +1,7 @@
 import { AppProps } from "next/app";
-import { useEffect } from "react";
+// import { useEffect } from "react";
 import Shield from "../container/Shield";
+import "../style.css";
 
 function MyApp({ Component, pageProps }: AppProps) {
   // enable logger for mediasoup

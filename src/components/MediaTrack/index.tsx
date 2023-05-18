@@ -7,7 +7,13 @@ interface Props {
   isLocal?: boolean;
   videoSrc: MediaStream;
   volume?: number;
+  ref?: React.RefObject<HTMLDivElement>;
 }
+
+const color = {
+  local: "#00ffaecd",
+  remote: "#ff000080",
+};
 
 function MediaTrack({
   videoSrc,
@@ -15,6 +21,7 @@ function MediaTrack({
   id,
   isLocal = false,
   volume = 1,
+  ref,
 }: Props): ReactElement {
   const refVideo = useRef<HTMLVideoElement>(null);
   const [loading, setLoading] = useState(false);
@@ -34,7 +41,15 @@ function MediaTrack({
   // }, [volume]);
 
   return (
-    <Box zIndex={isLocal ? "10" : "0"} position="relative">
+    <Box
+      // just for debug
+      // border={`1px solid ${isLocal ? color["local"] : color["remote"]}`}
+      ref={ref}
+      width={size}
+      height={size}
+      zIndex={10000}
+      position="relative"
+    >
       <video
         id={`${id}_video`}
         className="circle-vid"
@@ -44,7 +59,7 @@ function MediaTrack({
         ref={refVideo}
         style={{
           cursor: `${!isLocal && "not-allowed"}`,
-          border: `2px solid ${isLocal ? "#00ffaecd" : "#ff000080"}`,
+          border: `2px solid ${isLocal ? color["local"] : color["remote"]}`,
           borderRadius: "50%",
           position: "relative",
           objectFit: "cover",
